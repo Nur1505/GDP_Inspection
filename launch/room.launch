@@ -1,0 +1,58 @@
+<launch>
+  <arg name="world" default="$(find my_room_world)/worlds/room_6x6.world"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(arg world)"/>
+    <arg name="gui" value="true"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+  </include>
+
+  <include file="$(find hector_quadrotor_gazebo)/launch/spawn_quadrotor.launch">
+    <!-- spawn quadrotor near the southwest corner (inside walls) -->
+    <arg name="x" value="-14.0"/>
+    <arg name="y" value="-9.0"/>
+    <arg name="z" value="1.0"/>
+  </include>
+
+<node pkg="my_room_world" type="lawnmower_pose.py" name="lawnmower_pose" output="screen">
+  <!-- match the room/world size and pass a start pose so the publisher begins near the corner -->
+  <param name="room_size" value="30.0"/>
+  <param name="margin" value="1.0"/>
+  <param name="lane_step" value="1.0"/>
+  <param name="z" value="2.0"/>
+  <param name="hold_time" value="3.0"/>
+  <param name="rate" value="10.0"/>
+  <!-- starting coordinates (should match spawn args) -->
+  <param name="start_x" value="-14.0"/>
+  <param name="start_y" value="-9.0"/>
+</node>
+
+</launch>
+
+<!-- roslaunch my_room_world room.launch -->
+ <!-- rosservice call /enable_motors "{enable: true}" -->
+
+ <!-- rostopic pub -1 /command/pose geometry_msgs/PoseStamped "{
+  header: {frame_id: 'world'},
+  pose: {
+    position: {x: 1.0, y: 1.0, z: 1.5},
+    orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+  }
+}"
+publishing and latching message for 3.0 seconds -->
+
+<!-- inspection@inspection-ThinkStation-P320:~/catkin_ws/src$ rostopic pub -1  /command/twist geometry_msgs/TwistStamped "{
+  header: {frame_id: 'world'},
+  twist: {
+    linear:  {x: 0.5, y: 0.3, z: 0.3},
+    angular: {x: 0.0, y: 0.0, z: 0.3}
+  }
+}" -->
+
+<!-- roslaunch hector_quadrotor_gazebo quadrotor_empty_world.launch -->
+<!-- roslaunch hector_quadrotor_gazebo quadrotor_empty_world.launch -->
+
+
+<!-- chmod +x /home/inspection/catkin_ws/src/my_room_world/scripts/lawnmower_pose.py -->
+<!-- roslaunch my_room_world room.launch -->
