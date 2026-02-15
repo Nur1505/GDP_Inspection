@@ -63,10 +63,6 @@
 
     </model>
     
-    <node pkg="gazebo_ros" type="spawn_model" name="spawn_aircraft" output="screen"
-      args="-sdf -database cessna_c172 -model aircraft -x 0 -y 0 -z 0" />
-
-   
   </world>
 </sdf>
 

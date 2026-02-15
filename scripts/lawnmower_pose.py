@@ -34,7 +34,7 @@ def make_waypoints(room_size=6.0, margin=2.0, lane_step=0.6):
 
     wps = []
     direction = 1
-    for y in ys:
+    for y in ys:    
         if direction == 1:
             wps.append((x_min, y))
             wps.append((x_max, y))
@@ -59,11 +59,12 @@ def main():
     room_size = float(rospy.get_param("~room_size", 30.0))
     margin = float(rospy.get_param("~margin", 2.0))
     lane_step = float(rospy.get_param("~lane_step", 1.5))
-    z = float(rospy.get_param("~z", 2.0))
+    z = float(rospy.get_param("~z", 10.0))
 
     rate_hz = float(rospy.get_param("~rate", 10.0))
-    hold_time = float(rospy.get_param("~hold_time", 4.0))
+    hold_time = float(rospy.get_param("~hold_time", 0.0))
     transition_time = float(rospy.get_param("~transition_time", 10.0))
+    yaw_transition_time = float(rospy.get_param("~yaw_transition_time", 1.0))
 
     pub = rospy.Publisher(pose_topic, PoseStamped, queue_size=1)
 
@@ -103,7 +104,7 @@ def main():
     msg.header.stamp = rospy.Time.now()
     msg.pose.position.x = x0
     msg.pose.position.y = y0
-    msg.pose.position.z = z
+    msg.pose.position.z = 10
     msg.pose.orientation = yaw_to_quat(yaw0)
     pub.publish(msg)
 
@@ -113,16 +114,19 @@ def main():
 
         # transition (interpolate) from current waypoint to next
         if transition_time and transition_time > 0.0:
-            steps = max(1, int(transition_time * rate_hz))
+            pos_steps = max(1, int(transition_time * rate_hz))
+            yaw_steps = max(1, int(yaw_transition_time * rate_hz))
+            steps = max(pos_steps, yaw_steps)
             for s in range(steps):
-                t = float(s + 1) / float(steps)
-                # linear interp for position
-                xi = x0 + (x1 - x0) * t
-                yi = y0 + (y1 - y0) * t
-                zi = z
-                # shortest-angle yaw interpolation
+                # position interpolation (can finish before yaw)
+                t_pos = min(1.0, float(s + 1) / float(pos_steps))
+                xi = x0 + (x1 - x0) * t_pos
+                yi = y0 + (y1 - y0) * t_pos
+                zi = 10
+                # yaw interpolation (independent timing)
+                t_yaw = min(1.0, float(s + 1) / float(yaw_steps))
                 dy = (yaw1 - yaw0 + math.pi) % (2.0 * math.pi) - math.pi
-                yawi = yaw0 + dy * t
+                yawi = yaw0 + dy * t_yaw
 
                 msg.header.stamp = rospy.Time.now()
                 msg.pose.position.x = xi
@@ -130,12 +134,16 @@ def main():
                 msg.pose.position.z = zi
                 msg.pose.orientation = yaw_to_quat(yawi)
                 pub.publish(msg)
-                r.sleep()
+                try:
+                    r.sleep()
+                except rospy.ROSInterruptException:
+                    return
+
         else:
             msg.header.stamp = rospy.Time.now()
             msg.pose.position.x = x1
             msg.pose.position.y = y1
-            msg.pose.position.z = z
+            msg.pose.position.z = 10
             msg.pose.orientation = yaw_to_quat(yaw1)
             pub.publish(msg)
 
@@ -144,10 +152,14 @@ def main():
             msg.header.stamp = rospy.Time.now()
             msg.pose.position.x = x1
             msg.pose.position.y = y1
-            msg.pose.position.z = z
+            msg.pose.position.z = 10
             msg.pose.orientation = yaw_to_quat(yaw1)
             pub.publish(msg)
-            r.sleep()
+            try:
+                r.sleep()
+            except rospy.ROSInterruptException:
+                return
+
 
         # advance
         idx = next_idx

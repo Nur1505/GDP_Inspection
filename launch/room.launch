@@ -21,12 +21,17 @@
   <param name="margin" value="1.0"/>
   <param name="lane_step" value="1.0"/>
   <param name="z" value="2.0"/>
-  <param name="hold_time" value="3.0"/>
+  <param name="hold_time" value="0.0"/>
   <param name="rate" value="10.0"/>
+  <param name="transition_time" value="10.0"/>      <!-- Slow forward motion -->
+  <param name="yaw_transition_time" value="1.0"/>   <!-- Fast turns -->
   <!-- starting coordinates (should match spawn args) -->
   <param name="start_x" value="-14.0"/>
   <param name="start_y" value="-9.0"/>
 </node>
+
+<node pkg="gazebo_ros" type="spawn_model" name="spawn_aircraft" output="screen"
+      args="-sdf -file $(env HOME)/.gazebo/models/cessna/model.sdf -model aircraft -x 0 -y 0 -z 0.1" />
 
 </launch>
 
@@ -56,3 +61,11 @@ publishing and latching message for 3.0 seconds -->
 
 <!-- chmod +x /home/inspection/catkin_ws/src/my_room_world/scripts/lawnmower_pose.py -->
 <!-- roslaunch my_room_world room.launch -->
+
+<!-- ********************edit the payload on robot *********************-->
+<!-- inspection@inspection-ThinkStation-P320:~/catkin_ws$ rosed hector_quadrotor_description quadrotor.gazebo.xacro -->
+
+
+<!-- ********************start publishing camera images and open the camera view: ************************-->
+<!-- rostopic hz /d435/color/image_raw -->
+<!-- rosrun rqt_image_view rqt_image_view -->
