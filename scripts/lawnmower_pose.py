@@ -34,7 +34,7 @@ def make_waypoints(room_size=6.0, margin=2.0, lane_step=0.6):
 
     wps = []
     direction = 1
-    for y in ys:    
+    for y in ys:
         if direction == 1:
             wps.append((x_min, y))
             wps.append((x_max, y))
