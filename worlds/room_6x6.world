@@ -10,54 +10,60 @@
       <uri>model://ground_plane</uri>
     </include>
 
-    <model name="room_30x20">
+    <include>
+      <uri>model://airplane_only</uri>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+
+
+    <model name="room_40x30">
       <static>true</static>
 
-      <!-- Inner room: 30x20 m
+      <!-- Inner room: 40x30 m
            Wall thickness: 0.10 m
            Wall height: 20.00 m -->
 
       <!-- North wall (along X, +Y) -->
       <link name="wall_n">
-        <pose>0 10.05 10.0 0 0 0</pose>
+        <pose>0 15.05 10.0 0 0 0</pose>
         <collision name="col">
-          <geometry><box><size>30.1 0.1 20.0</size></box></geometry>
+          <geometry><box><size>40.1 0.1 20.0</size></box></geometry>
         </collision>
         <visual name="vis">
-          <geometry><box><size>30.1 0.1 20.0</size></box></geometry>
+          <geometry><box><size>40.1 0.1 20.0</size></box></geometry>
         </visual>
       </link>
 
       <!-- South wall (along X, -Y) -->
       <link name="wall_s">
-        <pose>0 -10.05 10.0 0 0 0</pose>
+        <pose>0 -15.05 10.0 0 0 0</pose>
         <collision name="col">
-          <geometry><box><size>30.1 0.1 20.0</size></box></geometry>
+          <geometry><box><size>40.1 0.1 20.0</size></box></geometry>
         </collision>
         <visual name="vis">
-          <geometry><box><size>30.1 0.1 20.0</size></box></geometry>
+          <geometry><box><size>40.1 0.1 20.0</size></box></geometry>
         </visual>
       </link>
 
       <!-- East wall (along Y, +X) -->
       <link name="wall_e">
-        <pose>15.05 0 10.0 0 0 0</pose>
+        <pose>20.05 0 10.0 0 0 0</pose>
         <collision name="col">
-          <geometry><box><size>0.1 20.1 20.0</size></box></geometry>
+          <geometry><box><size>0.1 30.1 20.0</size></box></geometry>
         </collision>
         <visual name="vis">
-          <geometry><box><size>0.1 20.1 20.0</size></box></geometry>
+          <geometry><box><size>0.1 30.1 20.0</size></box></geometry>
         </visual>
       </link>
 
       <!-- West wall (along Y, -X) -->
       <link name="wall_w">
-        <pose>-15.05 0 10.0 0 0 0</pose>
+        <pose>-20.05 0 10.0 0 0 0</pose>
         <collision name="col">
-          <geometry><box><size>0.1 20.1 20.0</size></box></geometry>
+          <geometry><box><size>0.1 30.1 20.0</size></box></geometry>
         </collision>
         <visual name="vis">
-          <geometry><box><size>0.1 20.1 20.0</size></box></geometry>
+          <geometry><box><size>0.1 30.1 20.0</size></box></geometry>
         </visual>
       </link>
 
