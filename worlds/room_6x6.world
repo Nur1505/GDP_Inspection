@@ -2,6 +2,13 @@
 <sdf version="1.6">
   <world name="room_world">
 
+<gui fullscreen="0">
+  <camera name="user_camera">
+    <pose>0 0 40 0 1.57 1.57</pose>
+    <view_controller>orbit</view_controller>
+    <projection_type>perspective</projection_type>
+  </camera>
+</gui>
     <include>
       <uri>model://sun</uri>
     </include>

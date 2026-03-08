@@ -1,0 +1,27 @@
+<launch>
+  <group ns="rtabmap">
+
+    <node pkg="rtabmap_ros" type="rtabmap" name="rtabmap" output="screen" args="--delete_db_on_start">
+      <param name="frame_id" value="base_link"/>
+      <param name="subscribe_depth" value="true"/>
+      <param name="approx_sync" value="true"/>
+
+      <remap from="rgb/image" to="/d435/color/image_raw"/>
+      <remap from="depth/image" to="/d435/depth/image_raw"/>
+      <remap from="rgb/camera_info" to="/d435/color/camera_info"/>
+      <remap from="odom" to="/odom"/>
+    </node>
+
+    <node pkg="rtabmap_ros" type="rtabmapviz" name="rtabmapviz" output="screen">
+      <param name="frame_id" value="base_link"/>
+      <param name="subscribe_depth" value="true"/>
+      <param name="approx_sync" value="true"/>
+
+      <remap from="rgb/image" to="/d435/color/image_raw"/>
+      <remap from="depth/image" to="/d435/depth/image_raw"/>
+      <remap from="rgb/camera_info" to="/d435/color/camera_info"/>
+      <remap from="odom" to="/odom"/>
+    </node>
+
+  </group>
+</launch>
