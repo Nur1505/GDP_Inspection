@@ -49,23 +49,30 @@
   </node>
 
 <!-- Perfect odometry perfectly works -->
-  <!-- <node pkg="my_room_world" type="perfect_odom.py" name="perfect_odom" output="screen">
+  <node pkg="my_room_world" type="perfect_odom.py" name="perfect_odom" output="screen">
     <param name="model_name" value="mapping_cube"/>
     <param name="odom_topic" value="/odom"/>
     <param name="odom_frame" value="odom"/>
     <param name="base_frame" value="base_link"/>
     <param name="publish_tf" value="true"/>
-  </node> -->
-
-    <node pkg="my_room_world" type="cube_waypoints.py" name="cube_waypoints" output="screen">
-    <param name="pose_topic" value="/command/pose"/>
-    <param name="rate" value="10.0"/>
-    <param name="transition_time" value="40.0"/>
-    <param name="hold_time" value="4.0"/>
-    <param name="z" value="5.0"/>
-    <param name="start_x" value="0.0"/>
-    <param name="start_y" value="0.0"/>
   </node>
+  
+<node pkg="my_room_world" type="cube_waypoints.py" name="cube_waypoints" output="screen">
+  <param name="pose_topic" value="/command/pose"/>
+  <param name="rate" value="10.0"/>
+  <param name="transition_time" value="35.0"/>
+  <param name="hold_time" value="4.0"/>
+  <param name="z" value="4.0"/>
+
+  <param name="start_x" value="0.0"/>
+  <param name="start_y" value="-9.0"/>
+
+  <param name="survey_x_min" value="-4.0"/>
+  <param name="survey_x_max" value="4.0"/>
+  <param name="survey_y_min" value="-4.0"/>
+  <param name="survey_y_max" value="4.0"/>
+  <param name="lane_step" value="1.0"/>
+</node>
 
     <node pkg="tf" type="static_transform_publisher" name="d435_to_color_optical"
         args="0 0 0 -1.5708 0 -1.5708 d435_link d435_color_optical_frame 100" />

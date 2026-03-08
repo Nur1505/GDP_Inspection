@@ -13,7 +13,7 @@
       <param name="Odom/GuessMotion" value="true"/>
       <param name="Odom/InlierDistance" value="0.1"/>
       <param name="Vis/MinInliers" value="8"/>
-      <param name="Vis/MaxFeatures" value="1500"/>
+      <param name="Vis/MaxFeatures" value="2000"/>
 
       <remap from="rgb/image" to="/d435/color/image_raw"/>
       <remap from="depth/image" to="/d435/depth/image_raw"/>
