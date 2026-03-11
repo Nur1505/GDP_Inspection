@@ -3,8 +3,10 @@ import math
 import rospy
 from geometry_msgs.msg import PoseStamped, Quaternion
 
+
 def yaw_to_quat(yaw):
-    return Quaternion(0.0, 0.0, math.sin(yaw/2.0), math.cos(yaw/2.0))
+    return Quaternion(0.0, 0.0, math.sin(yaw / 2.0), math.cos(yaw / 2.0))
+
 
 def frange(start, stop, step):
     vals = []
@@ -14,33 +16,52 @@ def frange(start, stop, step):
         x += step
     return vals
 
+
 def make_lawnmower(x_min, x_max, y_min, y_max, lane_step):
     ys = frange(y_min, y_max, lane_step)
     wps = []
 
-    for y in ys:
-        # Go across the lane
-        wps.append((x_min, y))
-        wps.append((x_max, y))
-
-        # Come back on the same lane
-        wps.append((x_min, y))
+    for i, y in enumerate(ys):
+        if i % 2 == 0:
+            wps.append((x_min, y))
+            wps.append((x_max, y))
+        else:
+            wps.append((x_max, y))
+            wps.append((x_min, y))
 
     return wps
+
+
+def publish_pose(pub, msg, rate, x, y, z, yaw, ticks):
+    for _ in range(ticks):
+        msg.header.stamp = rospy.Time.now()
+        msg.pose.position.x = x
+        msg.pose.position.y = y
+        msg.pose.position.z = z
+        msg.pose.orientation = yaw_to_quat(yaw)
+        pub.publish(msg)
+        rate.sleep()
+
 
 def main():
     rospy.init_node("cube_waypoints")
 
     pose_topic = rospy.get_param("~pose_topic", "/command/pose")
-    rate_hz = float(rospy.get_param("~rate", 10.0))
-    transition_time = float(rospy.get_param("~transition_time", 15.0))
+    rate_hz = float(rospy.get_param("~rate", 20.0))
     hold_time = float(rospy.get_param("~hold_time", 1.0))
-    z = float(rospy.get_param("~z", 2.5))
+    z = float(rospy.get_param("~z", 3.0))
+    speed = float(rospy.get_param("~speed", 0.5))  # meters/sec
 
+    # Optional staging point before survey starts
     start_x = float(rospy.get_param("~start_x", 0.0))
     start_y = float(rospy.get_param("~start_y", -9.0))
 
-    # Aircraft survey area near room center
+    # Actual spawned model position in Gazebo
+    spawn_x = float(rospy.get_param("~spawn_x", start_x))
+    spawn_y = float(rospy.get_param("~spawn_y", start_y))
+    spawn_z = float(rospy.get_param("~spawn_z", z))
+
+    # Survey area
     x_min = float(rospy.get_param("~survey_x_min", -4.0))
     x_max = float(rospy.get_param("~survey_x_max",  4.0))
     y_min = float(rospy.get_param("~survey_y_min", -4.0))
@@ -53,76 +74,72 @@ def main():
         rospy.logerr("No survey waypoints generated.")
         return
 
-    # Start from back middle, then go to first survey point
-    waypoints_pos = [(start_x, start_y), survey_wps[0]]
-    waypoints_pos.extend(survey_wps[1:])
-
-    fixed_yaw = 0.0
-    waypoints = [(x, y, fixed_yaw) for (x, y) in waypoints_pos]
+    # Full path: spawn -> staging point -> lawnmower points
+    path = [(spawn_x, spawn_y)]
+    if (start_x, start_y) != (spawn_x, spawn_y):
+        path.append((start_x, start_y))
+    path.extend(survey_wps)
 
     pub = rospy.Publisher(pose_topic, PoseStamped, queue_size=1)
-    r = rospy.Rate(rate_hz)
+    rate = rospy.Rate(rate_hz)
 
     msg = PoseStamped()
     msg.header.frame_id = "world"
 
     rospy.sleep(1.0)
 
-    x0, y0, yaw0 = waypoints[0]
-    for _ in range(int(2.0 * rate_hz)):
-        msg.header.stamp = rospy.Time.now()
-        msg.pose.position.x = x0
-        msg.pose.position.y = y0
-        msg.pose.position.z = z
-        msg.pose.orientation = yaw_to_quat(yaw0)
-        pub.publish(msg)
-        r.sleep()
+    x0, y0 = path[0]
+    z0 = spawn_z
 
-    rospy.loginfo("Starting aircraft survey pattern...")
+    # Hold at initial spawn position briefly
+    publish_pose(pub, msg, rate, x0, y0, z0, 0.0, int(2.0 * rate_hz))
+
+    rospy.loginfo("Starting classic lawnmower pattern...")
 
     idx = 0
     while not rospy.is_shutdown():
-        if idx >= len(waypoints) - 1:
-            rospy.loginfo("Survey complete. Holding final position.")
-            while not rospy.is_shutdown():
-                msg.header.stamp = rospy.Time.now()
-                msg.pose.position.x = x0
-                msg.pose.position.y = y0
-                msg.pose.position.z = z
-                msg.pose.orientation = yaw_to_quat(yaw0)
-                pub.publish(msg)
-                r.sleep()
+        if idx >= len(path) - 1:
+            rospy.loginfo("Lawnmower complete. Holding final position.")
+            publish_pose(pub, msg, rate, x0, y0, z, 0.0, 1)
+            continue
 
-        x1, y1, yaw1 = waypoints[idx + 1]
+        x1, y1 = path[idx + 1]
 
-        steps = max(1, int(transition_time * rate_hz))
+        dx = x1 - x0
+        dy = y1 - y0
+        dist = math.sqrt(dx * dx + dy * dy)
+
+        if dist < 1e-6:
+            idx += 1
+            continue
+
+        yaw = math.atan2(dy, dx)
+        segment_time = dist / max(speed, 1e-3)
+        steps = max(1, int(segment_time * rate_hz))
+
         for s in range(steps):
             t = float(s + 1) / float(steps)
             t_smooth = t * t * (3.0 - 2.0 * t)
 
-            xi = x0 + (x1 - x0) * t_smooth
-            yi = y0 + (y1 - y0) * t_smooth
+            xi = x0 + dx * t_smooth
+            yi = y0 + dy * t_smooth
+            zi = z0 + (z - z0) * t_smooth if idx == 0 else z
 
             msg.header.stamp = rospy.Time.now()
             msg.pose.position.x = xi
             msg.pose.position.y = yi
-            msg.pose.position.z = z
-            msg.pose.orientation = yaw_to_quat(yaw1)
+            msg.pose.position.z = zi
+            msg.pose.orientation = yaw_to_quat(yaw)
             pub.publish(msg)
-            r.sleep()
+            rate.sleep()
 
         hold_ticks = max(1, int(hold_time * rate_hz))
-        for _ in range(hold_ticks):
-            msg.header.stamp = rospy.Time.now()
-            msg.pose.position.x = x1
-            msg.pose.position.y = y1
-            msg.pose.position.z = z
-            msg.pose.orientation = yaw_to_quat(yaw1)
-            pub.publish(msg)
-            r.sleep()
+        publish_pose(pub, msg, rate, x1, y1, z, yaw, hold_ticks)
 
+        x0, y0 = x1, y1
+        z0 = z
         idx += 1
-        x0, y0, yaw0 = x1, y1, yaw1
+
 
 if __name__ == "__main__":
     main()

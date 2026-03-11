@@ -1,6 +1,15 @@
 <launch>
   <group ns="rtabmap">
 
+ <node pkg="rtabmap_ros" type="rgbd_sync" name="rgbd_sync" output="screen">
+      <param name="approx_sync" value="true"/>
+      <param name="queue_size" value="50"/>
+      <remap from="rgb/image" to="/rgbd/color/image_raw"/>
+      <remap from="depth/image" to="/rgbd/depth/image_raw"/>
+      <remap from="rgb/camera_info" to="/rgbd/color/camera_info"/>
+      <remap from="rgbd_image" to="/rgbd_image"/>
+    </node>
+    
     <!-- RTAB-Map's own RGB-D odometry -->
     <node pkg="rtabmap_ros" type="rgbd_odometry" name="rgbd_odometry" output="screen">
       <param name="frame_id" value="base_link"/>
@@ -12,12 +21,16 @@
       <!-- start conservative -->
       <param name="Odom/GuessMotion" value="true"/>
       <param name="Odom/InlierDistance" value="0.1"/>
-      <param name="Vis/MinInliers" value="8"/>
-      <param name="Vis/MaxFeatures" value="2000"/>
+      <param name="Vis/MinInliers" value="6"/>
+      <param name="Vis/MaxFeatures" value="800"/>
 
-      <remap from="rgb/image" to="/d435/color/image_raw"/>
+      <!-- <remap from="rgb/image" to="/d435/color/image_raw"/>
       <remap from="depth/image" to="/d435/depth/image_raw"/>
-      <remap from="rgb/camera_info" to="/d435/color/camera_info"/>
+      <remap from="rgb/camera_info" to="/d435/color/camera_info"/> -->
+
+      <remap from="rgb/image" to="/rgbd/color/image_raw"/>
+      <remap from="depth/image" to="/rgbd/depth/image_raw"/>
+      <remap from="rgb/camera_info" to="/rgbd/color/camera_info"/>
       <remap from="odom" to="/vo"/>
     </node>
 
@@ -27,9 +40,9 @@
       <param name="subscribe_depth" value="true"/>
       <param name="approx_sync" value="true"/>
 
-      <remap from="rgb/image" to="/d435/color/image_raw"/>
-      <remap from="depth/image" to="/d435/depth/image_raw"/>
-      <remap from="rgb/camera_info" to="/d435/color/camera_info"/>
+      <remap from="rgb/image" to="/rgbd/color/image_raw"/>
+      <remap from="depth/image" to="/rgbd/depth/image_raw"/>
+      <remap from="rgb/camera_info" to="/rgbd/color/camera_info"/>
       <remap from="odom" to="/vo"/>
     </node>
 
@@ -38,9 +51,9 @@
       <param name="subscribe_depth" value="true"/>
       <param name="approx_sync" value="true"/>
 
-      <remap from="rgb/image" to="/d435/color/image_raw"/>
-      <remap from="depth/image" to="/d435/depth/image_raw"/>
-      <remap from="rgb/camera_info" to="/d435/color/camera_info"/>
+      <remap from="rgb/image" to="/rgbd/color/image_raw"/>
+      <remap from="depth/image" to="/rgbd/depth/image_raw"/>
+      <remap from="rgb/camera_info" to="/rgbd/color/camera_info"/>
       <remap from="odom" to="/vo"/>
     </node>
 

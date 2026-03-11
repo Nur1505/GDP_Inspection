@@ -13,45 +13,55 @@
       <uri>model://sun</uri>
     </include>
 
-    <model name="textured_floor">
+   <!-- <include>
+      <uri>model://ground_plane</uri>
+    </include> -->
+
+   <!-- <include>
+      <uri>model://airplane_only</uri>
+      <pose>0 0 0 0 0 0</pose>
+    </include>  -->
+
+
+<model name="textured_floor">
   <static>true</static>
   <link name="floor_link">
-    <pose>0 0 0 0 0 0</pose>
-
     <collision name="floor_collision">
       <geometry>
         <plane>
           <normal>0 0 1</normal>
-          <size>40 30</size>
+          <size>40 30</size>  <!-- size matches your room -->
         </plane>
       </geometry>
+      <surface>
+        <contact>
+          <collide_without_contact>true</collide_without_contact>
+        </contact>
+      </surface>
     </collision>
-
     <visual name="floor_visual">
-      <cast_shadows>false</cast_shadows>
       <geometry>
         <plane>
           <normal>0 0 1</normal>
           <size>40 30</size>
         </plane>
       </geometry>
-      <material>
+      <!-- <material>
         <script>
           <uri>file://media/materials/scripts/gazebo.material</uri>
-          <!-- <name>Gazebo/GreyGrid</name> -->
-          <name>Gazebo/Wood</name>
-          <!-- <name>Gazebo/FloorTile</name> -->
+          <name>Gazebo/Check</name>
         </script>
-      </material>
+      </material> -->
+      <material>
+  <script>
+    <uri>file://media/materials/scripts</uri>
+    <uri>file://media/materials/textures</uri>
+    <name>MyRoom/Floor</name>
+  </script>
+</material>
     </visual>
   </link>
 </model>
-
-    <include>
-      <uri>model://airplane_only</uri>
-      <pose>0 0 0 0 0 0</pose>
-    </include>
-
 
     <model name="room_40x30">
       <static>true</static>
