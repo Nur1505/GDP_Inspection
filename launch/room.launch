@@ -37,7 +37,7 @@
         args="-urdf -param mapping_cube_description -model mapping_cube -x 0.0 -y -9.0 -z 5.0"/>
 
  <node pkg="gazebo_ros" type="spawn_model" name="spawn_aircraft" output="screen"
-      args="-sdf -file $(env HOME)/.gazebo/models/airplane_gdp/model.sdf -model aircraft_gdp -x 0 -y 0 -z 0.1" /> 
+      args="-sdf -file $(env HOME)/.gazebo/models/airplane_gdp/model.sdf -model airplane_gdp -x 0 -y 0 -z 0.1" /> 
 
   <node pkg="my_room_world" type="pose_to_gazebo.py" name="pose_to_gazebo" output="screen">
     <param name="model_name" value="mapping_cube"/>
@@ -63,6 +63,7 @@
   <param name="hold_time" value="2.0"/>
   <param name="z" value="3.0"/>
   <param name="speed" value="0.1"/>
+  <param name="fixed_yaw" value="1.5708"/>
 
   <param name="spawn_x" value="0.0"/>
   <param name="spawn_y" value="-9.0"/>

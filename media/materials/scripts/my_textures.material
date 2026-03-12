@@ -11,7 +11,7 @@ material MyRoom/Floor
       texture_unit
       {
         texture 13303-diffuse.jpg
-        scale 1 1
+        scale 0.1 0.12
       }
     }
   }

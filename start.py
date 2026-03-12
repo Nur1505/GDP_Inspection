@@ -12,6 +12,8 @@ pkill -f controller_manager 2>/dev/null || true
 pkill -f robot_state_publisher 2>/dev/null || true
 killall -9 roscore rosmaster 2>/dev/null || true
 
+ export GAZEBO_RESOURCE_PATH=$GAZEBO_RESOURCE_PATH:~/catkin_ws/src/my_room_world
+
 rm -f ~/.ros/rtabmap.db ~/.ros/rtabmap.db.back
 
 chmod +x /home/inspection/catkin_ws/src/my_room_world/scripts/lawnmower_pose.py

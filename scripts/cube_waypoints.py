@@ -51,6 +51,7 @@ def main():
     hold_time = float(rospy.get_param("~hold_time", 1.0))
     z = float(rospy.get_param("~z", 3.0))
     speed = float(rospy.get_param("~speed", 0.5))  # meters/sec
+    fixed_yaw = float(rospy.get_param("~fixed_yaw", 0.0))  # constant heading
 
     # Optional staging point before survey starts
     start_x = float(rospy.get_param("~start_x", 0.0))
@@ -92,15 +93,15 @@ def main():
     z0 = spawn_z
 
     # Hold at initial spawn position briefly
-    publish_pose(pub, msg, rate, x0, y0, z0, 0.0, int(2.0 * rate_hz))
+    publish_pose(pub, msg, rate, x0, y0, z0, fixed_yaw, int(2.0 * rate_hz))
 
-    rospy.loginfo("Starting classic lawnmower pattern...")
+    rospy.loginfo("Starting lawnmower pattern with fixed yaw...")
 
     idx = 0
     while not rospy.is_shutdown():
         if idx >= len(path) - 1:
             rospy.loginfo("Lawnmower complete. Holding final position.")
-            publish_pose(pub, msg, rate, x0, y0, z, 0.0, 1)
+            publish_pose(pub, msg, rate, x0, y0, z, fixed_yaw, 1)
             continue
 
         x1, y1 = path[idx + 1]
@@ -113,7 +114,6 @@ def main():
             idx += 1
             continue
 
-        yaw = math.atan2(dy, dx)
         segment_time = dist / max(speed, 1e-3)
         steps = max(1, int(segment_time * rate_hz))
 
@@ -129,12 +129,12 @@ def main():
             msg.pose.position.x = xi
             msg.pose.position.y = yi
             msg.pose.position.z = zi
-            msg.pose.orientation = yaw_to_quat(yaw)
+            msg.pose.orientation = yaw_to_quat(fixed_yaw)
             pub.publish(msg)
             rate.sleep()
 
         hold_ticks = max(1, int(hold_time * rate_hz))
-        publish_pose(pub, msg, rate, x1, y1, z, yaw, hold_ticks)
+        publish_pose(pub, msg, rate, x1, y1, z, fixed_yaw, hold_ticks)
 
         x0, y0 = x1, y1
         z0 = z
