@@ -1,8 +1,10 @@
 #!/usr/bin/env python2
 import math
+from time import time
 import rospy
 from geometry_msgs.msg import PoseStamped, Quaternion
 from hector_uav_msgs.srv import EnableMotors
+from std_msgs.msg import Bool
 
 def enable_motors(service_name="/enable_motors", enable=True, timeout=10.0):
     rospy.loginfo("Waiting for %s ...", service_name)
@@ -133,7 +135,7 @@ def main():
     # -------------------------------
     rospy.loginfo("Hovering for 2 seconds...")
     hover_rate = rospy.Rate(10)
-    for _ in range(20):
+    for _ in range(40):
         msg.header.stamp = rospy.Time.now()
         pub.publish(msg)
         hover_rate.sleep()
@@ -141,7 +143,11 @@ def main():
     # Now ready to start lawnmower transitions
     rospy.loginfo("Starting lawnmower pattern...")
 
-
+    started_pub = rospy.Publisher("/lawnmower_started", Bool, queue_size=1, latch=True)
+    finished_pub = rospy.Publisher("/lawnmower_finished", Bool, queue_size=1, latch=True)
+    
+    started_pub.publish(Bool(data=True))
+    
     while not rospy.is_shutdown():
         if idx == len(waypoints) - 1: 
             rospy.loginfo("Reached final waypoint. Holding position and stopping mission.") 
@@ -154,7 +160,10 @@ def main():
                 msg.pose.position.z = z 
                 msg.pose.orientation = yaw_to_quat(fixed_yaw) 
                 pub.publish(msg) 
-                hold_rate.sleep() 
+                hold_rate.sleep()
+            finished_pub.publish(Bool(data=True)) 
+            rospy.loginfo("Published lawnmower finished signal.")
+            rospy.sleep(0.5)
             return # Exit node cleanly
     
         next_idx = (idx + 1) % len(waypoints)

@@ -9,85 +9,30 @@
     <arg name="use_sim_time" value="true"/>
   </include>
 
-  <!-- <include file="$(find hector_quadrotor_gazebo)/launch/spawn_quadrotor.launch">
-    <arg name="x" value="-10.0"/>
-    <arg name="y" value="-10.0"/>
+  <include file="$(find hector_quadrotor_gazebo)/launch/spawn_quadrotor.launch">
+    <arg name="x" value="-4.0"/>
+    <arg name="y" value="-4.0"/>
     <arg name="z" value="1.0"/>
-  </include> -->
+  </include> 
 
-<!-- <node pkg="my_room_world" type="lawnmower_pose.py" name="lawnmower_pose" output="screen">
+<node pkg="my_room_world" type="lawnmower_pose.py" name="lawnmower_pose" output="screen">
  <param name="start_delay" value="5.0"/>
-  <param name="room_size_x" value="20.0"/>
-  <param name="room_size_y" value="20.0"/>
+  <param name="room_size_x" value="10.0"/>
+  <param name="room_size_y" value="10.0"/>
   <param name="margin" value="1.0"/>
   <param name="lane_step" value="1.0"/>
-  <param name="z" value="5.0"/>
+  <param name="z" value="3.3"/>
   <param name="hold_time" value="0.0"/>
   <param name="rate" value="10.0"/>
-  <param name="transition_time" value="20.0"/>     
+  <param name="transition_time" value="40.0"/>     
   <param name="yaw_transition_time" value="1.0"/>   
-  <param name="start_x" value="-10.0"/>
-  <param name="start_y" value="-10.0"/>
-</node> -->
-
- <param name="mapping_cube_description"
-         command="$(find xacro)/xacro '$(find my_hector_addons)/urdf/mapping_cube.urdf.xacro'" />
-
-  <node pkg="gazebo_ros" type="spawn_model" name="spawn_mapping_cube" output="screen"
-        args="-urdf -param mapping_cube_description -model mapping_cube -x 0.0 -y -9.0 -z 5.0"/>
+  <param name="start_x" value="-4.0"/>
+  <param name="start_y" value="-4.0"/>
+</node> 
 
  <node pkg="gazebo_ros" type="spawn_model" name="spawn_aircraft" output="screen"
       args="-sdf -file $(env HOME)/.gazebo/models/airplane_gdp/model.sdf -model airplane_gdp -x 0 -y 0 -z 0.1" /> 
 
-  <node pkg="my_room_world" type="pose_to_gazebo.py" name="pose_to_gazebo" output="screen">
-    <param name="model_name" value="mapping_cube"/>
-    <param name="reference_frame" value="world"/>
-    <param name="pose_topic" value="/command/pose"/>
-    <param name="publish_tf" value="false"/>
-    <param name="parent_frame" value="odom"/>
-    <param name="child_frame" value="base_link"/>
-  </node>
-
-<!-- Perfect odometry perfectly works -->
-  <!-- <node pkg="my_room_world" type="perfect_odom.py" name="perfect_odom" output="screen">
-    <param name="model_name" value="mapping_cube"/>
-    <param name="odom_topic" value="/odom"/>
-    <param name="odom_frame" value="odom"/>
-    <param name="base_frame" value="base_link"/>
-    <param name="publish_tf" value="true"/>
-  </node>  -->
-
-<node pkg="my_room_world" type="cube_waypoints.py" name="cube_waypoints" output="screen">
-  <param name="pose_topic" value="/command/pose"/>
-  <param name="rate" value="40.0"/>
-  <param name="hold_time" value="2.0"/>
-  <param name="z" value="3.0"/>
-  <param name="speed" value="0.1"/>
-  <param name="fixed_yaw" value="1.5708"/>
-
-  <param name="spawn_x" value="0.0"/>
-  <param name="spawn_y" value="-9.0"/>
-  <param name="spawn_z" value="5.0"/>
-
-  <param name="start_x" value="0.0"/>
-  <param name="start_y" value="-9.0"/>
-
-  <param name="survey_x_min" value="-4.0"/>
-  <param name="survey_x_max" value="4.0"/>
-  <param name="survey_y_min" value="-4.0"/>
-  <param name="survey_y_max" value="4.0"/>
-  <param name="lane_step" value="1.0"/>
-</node>
-
-<!--TF for D435 camera-->
-    <!-- <node pkg="tf" type="static_transform_publisher" name="d435_to_color_optical"
-        args="0 0 0 -1.5708 0 -1.5708 d435_link d435_color_optical_frame 100" />
-
-  <node pkg="tf" type="static_transform_publisher" name="d435_to_depth_optical"
-        args="0 0 0 -1.5708 0 -1.5708 d435_link d435_depth_optical_frame 100" />
-
-    <node pkg="tf" type="static_transform_publisher" name="base_to_d435"
-        args="0 0 -0.10 0 1.5708 0 base_link d435_link 100" /> -->
 
         <node pkg="tf" type="static_transform_publisher" name="base_to_rgbd"
       args="0 0 -0.10 0 1.5708 0 base_link rgbd_link 100" />
@@ -98,6 +43,11 @@
 <node pkg="tf" type="static_transform_publisher" name="rgbd_to_depth_optical"
       args="0 0 0 -1.5708 0 -1.5708 rgbd_link rgbd_depth_optical_frame 100" />
 
+<node pkg="my_room_world" type="launch_rtab.py"
+      name="delayed_rtabmap_launcher" output="screen" />
+
+<node pkg="my_room_world" type="stop_rtab.py"
+      name="rtab_stop_watcher" output="screen" />
 </launch>
 
 <!-- roslaunch my_room_world room.launch -->
