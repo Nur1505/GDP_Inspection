@@ -24,7 +24,7 @@
   <param name="z" value="3.3"/>
   <param name="hold_time" value="0.0"/>
   <param name="rate" value="10.0"/>
-  <param name="transition_time" value="40.0"/>     
+  <param name="transition_time" value="30.0"/>     
   <param name="yaw_transition_time" value="1.0"/>   
   <param name="start_x" value="-4.0"/>
   <param name="start_y" value="-4.0"/>
@@ -44,10 +44,17 @@
       args="0 0 0 -1.5708 0 -1.5708 rgbd_link rgbd_depth_optical_frame 100" />
 
 <node pkg="my_room_world" type="launch_rtab.py"
-      name="delayed_rtabmap_launcher" output="screen" />
+      name="delayed_rtabmap_launcher" output="screen">
+  <param name="map_origin_file" value="$(find my_room_world)/rtabmap_rgb_export/map_origin.json"/>
+</node>
 
 <node pkg="my_room_world" type="stop_rtab.py"
-      name="rtab_stop_watcher" output="screen" />
+      name="rtab_stop_watcher" output="screen">
+  <param name="db_path" value="$(env HOME)/.ros/rtabmap.db"/>
+  <param name="export_dir" value="$(find my_room_world)/rtabmap_rgb_export"/>
+  <param name="apriltag_script" value="$(find my_room_world)/apriltag_location.py"/>
+  <param name="goto_script" value="$(find my_room_world)/scripts/go_to_FOI.py"/>
+</node>
 </launch>
 
 <!-- roslaunch my_room_world room.launch -->

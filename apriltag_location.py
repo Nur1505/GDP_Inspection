@@ -2,6 +2,7 @@
 import cv2
 import numpy as np
 import pandas as pd
+import json
 from pathlib import Path
 from pupil_apriltags import Detector
 
@@ -21,7 +22,7 @@ TAG_FAMILY = "tag36h11"
 TARGET_TAG_ID = None   # keep None while debugging
 UPSCALE = 2.0          # helps tiny tags a bit
 DEBUG_PRINT_ALL = True
-
+OUTPUT_JSON = "./rtabmap_rgb_export/apriltag_median_map.json"
 
 def quat_to_rot(qx, qy, qz, qw):
     q = np.array([qx, qy, qz, qw], dtype=np.float64)
@@ -255,10 +256,20 @@ def main():
 
     if len(df) > 0:
         med = df[["x", "y", "z"]].median()
-        print("\nFinal AprilTag position (median):")
+        result = {
+            "x": float(med["x"]),
+            "y": float(med["y"]),
+            "z": float(med["z"])
+        }
+
+        with open(OUTPUT_JSON, "w") as f:
+            json.dump(result, f, indent=2)
+
+        print("\nFinal AprilTag position (median, map frame):")
         print("x = {:.3f}".format(med["x"]))
         print("y = {:.3f}".format(med["y"]))
         print("z = {:.3f}".format(med["z"]))
+        print("Saved median map-frame pose to", OUTPUT_JSON)
     else:
         print("No results saved.")
 
