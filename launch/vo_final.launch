@@ -5,52 +5,43 @@
     <param name="approx_sync" value="true"/>
     <param name="queue_size" value="30"/>
 
-    <remap from="rgb/image" to="/rgbd/color/image_raw"/>
-    <remap from="depth/image" to="/rgbd/depth/image_raw"/>
-    <remap from="rgb/camera_info" to="/rgbd/color/camera_info"/>
-    <remap from="rgbd_image" to="/rgbd_image"/>
+    <remap from="rgb/image" to="/uav1/rgbd/color/image_raw"/>
+    <remap from="depth/image" to="/uav1/rgbd/depth/image_raw"/>
+    <remap from="rgb/camera_info" to="/uav1/rgbd/color/camera_info"/>
+    <remap from="rgbd_image" to="/uav1/rgbd_image"/>
   </node>
-
 
   <!-- Visual Odometry -->
   <node pkg="rtabmap_ros" type="rgbd_odometry" name="rgbd_odometry" output="screen">
-
-    <param name="frame_id" value="base_link"/>
+    <param name="frame_id" value="uav1/base_link"/>
     <param name="publish_tf" value="true"/>
     <param name="subscribe_rgbd" value="true"/>
 
-     <param name="Kp/DetectorStrategy" value="6"/>
-  <param name="Kp/MaxFeatures" value="1000"/>
-  <param name="Vis/MinInliers" value="10"/>
+    <param name="Kp/DetectorStrategy" value="6"/>
+    <param name="Kp/MaxFeatures" value="1000"/>
+    <param name="Vis/MinInliers" value="10"/>
 
-    <remap from="rgbd_image" to="/rgbd_image"/>
-    <remap from="odom" to="/odom"/>
-
+    <remap from="rgbd_image" to="/uav1/rgbd_image"/>
+    <remap from="odom" to="/uav1/odom"/>
   </node>
-
 
   <!-- RTAB-Map SLAM -->
   <node pkg="rtabmap_ros" type="rtabmap" name="rtabmap" output="screen"
         args="--delete_db_on_start">
-
-    <param name="frame_id" value="base_link"/>
+    <param name="frame_id" value="uav1/base_link"/>
     <param name="subscribe_rgbd" value="true"/>
 
-    <remap from="rgbd_image" to="/rgbd_image"/>
-    <remap from="odom" to="/odom"/>
-
+    <remap from="rgbd_image" to="/uav1/rgbd_image"/>
+    <remap from="odom" to="/uav1/odom"/>
   </node>
-
 
   <!-- Visualization -->
   <node pkg="rtabmap_ros" type="rtabmapviz" name="rtabmapviz" output="screen">
-
-    <param name="frame_id" value="base_link"/>
+    <param name="frame_id" value="uav1/base_link"/>
     <param name="subscribe_rgbd" value="true"/>
 
-    <remap from="rgbd_image" to="/rgbd_image"/>
-    <remap from="odom" to="/odom"/>
-
+    <remap from="rgbd_image" to="/uav1/rgbd_image"/>
+    <remap from="odom" to="/uav1/odom"/>
   </node>
 
 </launch>

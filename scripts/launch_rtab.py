@@ -15,16 +15,21 @@ def main():
         os.path.expanduser("~/catkin_ws/src/my_room_world/rtabmap_rgb_export/map_origin.json")
     )
 
+    rgb_topic = rospy.get_param("~rgb_topic", "/uav1/rgbd/color/image_raw")
+    depth_topic = rospy.get_param("~depth_topic", "/uav1/rgbd/depth/image_raw")
+    camera_info_topic = rospy.get_param("~camera_info_topic", "/uav1/rgbd/color/camera_info")
+    gt_topic = rospy.get_param("~ground_truth_topic", "/uav1/ground_truth/state")
+
     rospy.loginfo("Waiting for RGBD topics...")
-    rospy.wait_for_message("/rgbd/color/image_raw", Image)
-    rospy.wait_for_message("/rgbd/depth/image_raw", Image)
-    rospy.wait_for_message("/rgbd/color/camera_info", CameraInfo)
+    rospy.wait_for_message(rgb_topic, Image)
+    rospy.wait_for_message(depth_topic, Image)
+    rospy.wait_for_message(camera_info_topic, CameraInfo)
 
     rospy.loginfo("Waiting for lawnmower mission to start...")
     rospy.wait_for_message("/lawnmower_started", Bool)
 
-    rospy.loginfo("Getting initial world pose from /ground_truth/state...")
-    gt = rospy.wait_for_message("/ground_truth/state", Odometry)
+    rospy.loginfo("Getting initial world pose from %s...", gt_topic)
+    gt = rospy.wait_for_message(gt_topic, Odometry)
 
     data = {
         "x": gt.pose.pose.position.x,

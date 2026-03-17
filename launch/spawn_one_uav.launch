@@ -1,0 +1,20 @@
+<launch>
+  <arg name="model" default="$(find hector_quadrotor_description)/urdf/quadrotor.gazebo.xacro"/>
+  <arg name="ns"/>
+  <arg name="name" default="$(arg ns)"/>
+  <arg name="tf_prefix" default="$(arg ns)"/>
+  <arg name="x" default="0.0"/>
+  <arg name="y" default="0.0"/>
+  <arg name="z" default="1.0"/>
+
+  <group ns="$(arg ns)">
+    <include file="$(find hector_quadrotor_gazebo)/launch/spawn_quadrotor.launch">
+      <arg name="name" value="$(arg name)"/>
+      <arg name="tf_prefix" value="$(arg tf_prefix)"/>
+      <arg name="model" value="$(arg model)"/>
+      <arg name="x" value="$(arg x)"/>
+      <arg name="y" value="$(arg y)"/>
+      <arg name="z" value="$(arg z)"/>
+    </include>
+  </group>
+</launch>

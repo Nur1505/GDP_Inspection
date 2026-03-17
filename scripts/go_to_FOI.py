@@ -5,6 +5,19 @@ import math
 import rospy
 import numpy as np
 from geometry_msgs.msg import PoseStamped, Quaternion
+from hector_uav_msgs.srv import EnableMotors
+
+def enable_motors(service_name, enable=True, timeout=10.0):
+    rospy.loginfo("Waiting for %s ...", service_name)
+    rospy.wait_for_service(service_name, timeout=timeout)
+    try:
+        srv = rospy.ServiceProxy(service_name, EnableMotors)
+        resp = srv(enable)
+        rospy.loginfo("enable_motors(%s) -> success=%s", enable, resp.success)
+        return resp.success
+    except rospy.ServiceException as e:
+        rospy.logerr("Failed to call %s: %s", service_name, str(e))
+        return False
 
 def quat_to_rot(qx, qy, qz, qw):
     q = np.array([qx, qy, qz, qw], dtype=np.float64)
@@ -32,7 +45,7 @@ def make_T(x, y, z, qx, qy, qz, qw):
     return T
 
 def main():
-    rospy.init_node("go_to_tag_world")
+    rospy.init_node("go_to_foi_uav2")
 
     map_origin_file = rospy.get_param(
         "~map_origin_file",
@@ -42,7 +55,9 @@ def main():
         "~tag_map_file",
         os.path.expanduser("~/catkin_ws/src/my_room_world/rtabmap_rgb_export/apriltag_median_map.json")
     )
-    pose_topic = rospy.get_param("~pose_topic", "/command/pose")
+
+    pose_topic = rospy.get_param("~pose_topic", "/uav2/command/pose")
+    enable_srv = rospy.get_param("~enable_motors_srv", "/uav2/enable_motors")
     target_z = rospy.get_param("~target_z", 3.0)
     hover_seconds = rospy.get_param("~hover_seconds", 10.0)
 
@@ -51,7 +66,7 @@ def main():
         return
 
     if not os.path.exists(tag_map_file):
-        rospy.logerr("Missing AprilTag map result file: %s", tag_map_file)
+        rospy.logerr("Missing FOI map result file: %s", tag_map_file)
         return
 
     with open(map_origin_file, "r") as f:
@@ -71,16 +86,21 @@ def main():
     target_x = float(p_world[0])
     target_y = float(p_world[1])
 
-    rospy.loginfo("Tag in map frame:  (%.3f, %.3f, %.3f)",
+    rospy.loginfo("FOI in map frame:  (%.3f, %.3f, %.3f)",
                   tag_map["x"], tag_map["y"], tag_map["z"])
-    rospy.loginfo("Tag in world frame: (%.3f, %.3f, %.3f)",
+    rospy.loginfo("FOI in world frame: (%.3f, %.3f, %.3f)",
                   p_world[0], p_world[1], p_world[2])
+
+    ok = enable_motors(enable_srv, True, timeout=10.0)
+    if not ok:
+        rospy.logwarn("UAV2 motors not enabled; continuing anyway.")
 
     pub = rospy.Publisher(pose_topic, PoseStamped, queue_size=1)
     rospy.sleep(1.0)
 
     msg = PoseStamped()
-    msg.header.frame_id = "world"
+    command_frame = "uav2/world" #rospy.get_param("~command_frame", "world")
+    msg.header.frame_id = command_frame
     msg.pose.position.x = target_x
     msg.pose.position.y = target_y
     msg.pose.position.z = target_z
@@ -89,13 +109,13 @@ def main():
     rate = rospy.Rate(10)
     ticks = int(max(1.0, hover_seconds) * 10.0)
 
-    rospy.loginfo("Sending drone to tag world position...")
+    rospy.loginfo("Sending UAV2 to FOI world position...")
     for _ in range(ticks):
         msg.header.stamp = rospy.Time.now()
         pub.publish(msg)
         rate.sleep()
 
-    rospy.loginfo("Done sending goal.")
+    rospy.loginfo("Done sending UAV2 goal.")
 
 if __name__ == "__main__":
     main()

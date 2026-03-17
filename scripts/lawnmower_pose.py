@@ -59,9 +59,12 @@ def main():
         rospy.sleep(delay)
 
     # Wait for controller manager
+    switch_srv = rospy.get_param("~switch_controller_srv", "/controller_manager/switch_controller")
+    unload_srv = rospy.get_param("~unload_controller_srv", "/controller_manager/unload_controller")
+
     rospy.loginfo("Waiting for controller manager services...")
-    rospy.wait_for_service("/controller_manager/switch_controller")
-    rospy.wait_for_service("/controller_manager/unload_controller")
+    rospy.wait_for_service(switch_srv)
+    rospy.wait_for_service(unload_srv)
 
     pose_topic = rospy.get_param("~pose_topic", "/command/pose")
     enable_srv = rospy.get_param("~enable_motors_srv", "/enable_motors")
@@ -91,8 +94,10 @@ def main():
 
     r = rospy.Rate(rate_hz)
 
+    command_frame = rospy.get_param("~command_frame", "world")
+
     msg = PoseStamped()
-    msg.header.frame_id = "world"
+    msg.header.frame_id = command_frame
 
     ticks_per_wp = max(1, int(hold_time * rate_hz))
 
