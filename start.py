@@ -22,7 +22,8 @@ chmod +x ~/catkin_ws/src/my_room_world/scripts/pose_to_gazebo.py
 chmod +x ~/catkin_ws/src/my_room_world/scripts/perfect_odom.py
 chmod +x ~/catkin_ws/src/my_room_world/scripts/cube_waypoints.py
 chmod +x ~/catkin_ws/src/my_room_world/scripts/launch_rtab.py
-chmod +x stop_rtab.py
+chmod +x ~/catkin_ws/src/my_room_world/scripts/uav2_astar_planner.py
+chmod +x ~/catkin_ws/src/my_room_world/scripts/stop_rtab.py
 
 cd ~/catkin_ws
 catkin_make

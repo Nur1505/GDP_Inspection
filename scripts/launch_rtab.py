@@ -4,6 +4,7 @@ import json
 import rospy
 import subprocess
 from sensor_msgs.msg import Image, CameraInfo
+from std_msgs import msg
 from std_msgs.msg import Bool
 from nav_msgs.msg import Odometry
 
@@ -50,7 +51,7 @@ def main():
 
     rospy.loginfo("Saved map origin to %s", save_file)
     rospy.loginfo("Launching RTAB-Map...")
-
+        
     subprocess.call([
         "roslaunch",
         "my_room_world",

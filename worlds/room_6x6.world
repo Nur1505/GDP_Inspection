@@ -13,9 +13,9 @@
       <uri>model://sun</uri>
     </include>
 
-   <include>
+   <!-- <include>
       <uri>model://ground_plane</uri>
-    </include>
+    </include> -->
 
    <!-- <include>
       <uri>model://airplane_only</uri>
@@ -29,20 +29,20 @@
     <collision name="floor_collision">
       <geometry>
         <plane>
-          <normal>0 0 1</normal>
-          <size>40 30</size>  <!-- size matches your room -->
+          <normal>0 0 1.2</normal>
+          <size>40 30</size> 
         </plane>
       </geometry>
       <surface>
         <contact>
-          <collide_without_contact>true</collide_without_contact>
+          <collide_without_contact>false</collide_without_contact>
         </contact>
       </surface>
     </collision>
     <visual name="floor_visual">
       <geometry>
         <plane>
-          <normal>0 0 1</normal>
+          <normal>0 0 1.2</normal>
           <size>40 30</size>
         </plane>
       </geometry>

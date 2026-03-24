@@ -12,20 +12,20 @@
 <!-- UAV1: surveyor -->
   <include file="$(find my_room_world)/launch/spawn_one_uav.launch">
     <arg name="ns" value="uav1"/>
-    <arg name="x" value="-4.0"/>
-    <arg name="y" value="-4.0"/>
+    <arg name="x" value="-5.0"/>
+    <arg name="y" value="-5.0"/>
     <arg name="z" value="1.0"/>
   </include>
 
   <!-- UAV2: inspector -->
   <include file="$(find my_room_world)/launch/spawn_one_uav.launch">
     <arg name="ns" value="uav2"/>
-    <arg name="x" value="4.0"/>
-    <arg name="y" value="-4.0"/>
+    <arg name="x" value="5.0"/>
+    <arg name="y" value="-5.0"/>
     <arg name="z" value="1.0"/>
   </include>
 
-<!-- UAV1 lawnmower -->
+<!-- Surveyor lawnmower -->
 <node pkg="my_room_world" type="lawnmower_pose.py" name="lawnmower_pose" output="screen">
   <param name="pose_topic" value="/uav1/command/pose"/>
   <param name="enable_motors_srv" value="/uav1/enable_motors"/>
@@ -34,24 +34,24 @@
   <param name="command_frame" value="uav1/world"/>
 
   <param name="start_delay" value="5.0"/>
-  <param name="room_size_x" value="10.0"/>
-  <param name="room_size_y" value="10.0"/>
+  <param name="room_size_x" value="20.0"/>
+  <param name="room_size_y" value="20.0"/>
   <param name="margin" value="1.0"/>
   <param name="lane_step" value="1.0"/>
-  <param name="z" value="3.3"/>
+  <param name="z" value="4.0"/>
   <param name="hold_time" value="0.0"/>
   <param name="rate" value="10.0"/>
-  <param name="transition_time" value="30.0"/>
+  <param name="transition_time" value="40.0"/>
   <param name="yaw_transition_time" value="1.0"/>
-  <param name="start_x" value="-4.0"/>
-  <param name="start_y" value="-4.0"/>
+  <param name="start_x" value="-5.0"/>
+  <param name="start_y" value="-5.0"/>
 </node>
 
  <node pkg="gazebo_ros" type="spawn_model" name="spawn_aircraft" output="screen"
       args="-sdf -file $(env HOME)/.gazebo/models/airplane_gdp/model.sdf -model airplane_gdp -x 0 -y 0 -z 0.1" /> 
 
 
-<!-- UAV1 camera TF only -->
+<!-- Surveyor camera TF only -->
   <node pkg="tf" type="static_transform_publisher" name="uav1_base_to_rgbd"
         args="0 0 -0.10 0 1.5708 0 uav1/base_link uav1/rgbd_link 100" />
 
@@ -61,19 +61,40 @@
   <node pkg="tf" type="static_transform_publisher" name="uav1_rgbd_to_depth_optical"
         args="0 0 0 -1.5708 0 -1.5708 uav1/rgbd_link uav1/rgbd_depth_optical_frame 100" />
 
-  <!-- RTAB launcher: UAV1 only -->
+  <!-- RTAB launcher: Surveyor only -->
   <node pkg="my_room_world" type="launch_rtab.py"
         name="delayed_rtabmap_launcher" output="screen">
     <param name="map_origin_file" value="$(find my_room_world)/rtabmap_rgb_export/map_origin.json"/>
   </node>
 
   <!-- Stop RTAB + FOI pipeline -->
-  <node pkg="my_room_world" type="stop_rtab.py"
-        name="rtab_stop_watcher" output="screen">
-    <param name="db_path" value="$(env HOME)/.ros/rtabmap.db"/>
-    <param name="export_dir" value="$(find my_room_world)/rtabmap_rgb_export"/>
-    <param name="apriltag_script" value="$(find my_room_world)/apriltag_location.py"/>
-    <param name="goto_script" value="$(find my_room_world)/scripts/go_to_FOI.py"/>
+<node pkg="my_room_world" type="stop_rtab.py" name="rtab_stop_watcher" output="screen">
+  <param name="db_path" value="$(env HOME)/.ros/rtabmap.db"/>
+  <param name="export_dir" value="$(find my_room_world)/rtabmap_rgb_export"/>
+  <param name="apriltag_script" value="$(find my_room_world)/apriltag_location.py"/>
+  <param name="map_topic" value="/proj_map"/>
+</node>
+
+  <node pkg="my_room_world" type="mission_metrics_logger.py" name="mission_metrics_logger" output="screen">
+    <param name="results_dir" value="$(env HOME)/simulation_results"/>
+    <param name="run_id" value="$(anon simrun)"/>
+
+    <param name="foi_gt_x" value="2.0"/>
+    <param name="foi_gt_y" value="0.0"/>
+    <param name="foi_gt_z" value="2.1"/>
+
+    <!-- ROI for map completeness -->
+    <param name="map_roi_x_min" value="-5.0"/>
+    <param name="map_roi_x_max" value="5.0"/>
+    <param name="map_roi_y_min" value="-5.0"/>
+    <param name="map_roi_y_max" value="5.0"/>
+
+    <param name="uav1_gt_topic" value="/uav1/ground_truth/state"/>
+    <param name="uav1_est_topic" value="/uav1/odom"/>
+    <param name="map_topic" value="/proj_map"/>
+    <param name="finished_topic" value="/lawnmower_finished"/>
+    <param name="foi_file" value="$(find my_room_world)/rtabmap_rgb_export/apriltag_median_map.json"/>
+    <param name="map_origin_file" value="$(find my_room_world)/rtabmap_rgb_export/map_origin.json"/>
   </node>
 </launch>
 

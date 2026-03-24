@@ -140,7 +140,7 @@ def main():
     # -------------------------------
     rospy.loginfo("Hovering for 2 seconds...")
     hover_rate = rospy.Rate(10)
-    for _ in range(40):
+    for _ in range(60):
         msg.header.stamp = rospy.Time.now()
         pub.publish(msg)
         hover_rate.sleep()
@@ -153,6 +153,10 @@ def main():
     
     started_pub.publish(Bool(data=True))
     
+    hover_rate = rospy.Rate(10)
+    for _ in range(60):
+        hover_rate.sleep()
+        
     while not rospy.is_shutdown():
         if idx == len(waypoints) - 1: 
             rospy.loginfo("Reached final waypoint. Holding position and stopping mission.") 
