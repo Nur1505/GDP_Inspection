@@ -92,7 +92,7 @@ source /opt/ros/melodic/setup.bash
 
 ```bash
 cd ~/catkin_ws/src
-git clone <YOUR_REPO_URL>
+git clone https://github.com/Nur1505/GDP_Inspection.git
 ```
 
 ### 4. Build the workspace
