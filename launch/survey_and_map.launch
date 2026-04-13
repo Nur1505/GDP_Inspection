@@ -1,0 +1,22 @@
+<launch>
+  <include file="$(find my_room_world)/launch/room.launch"/>
+
+  <!-- RTAB-Map mapping (your d435 topics) -->
+  <include file="$(find my_room_world)/launch/rtabmap_mapping.launch"/>
+
+  <!-- Supervisor: start mapping after takeoff, stop/save when /survey_done -->
+  <node pkg="my_room_world" type="mapping_supervisor.py" name="mapping_supervisor" output="screen">
+    <param name="z_start" value="1.0"/>
+    <param name="odom_topic" value="/ground_truth/state"/>
+    <param name="done_topic" value="/survey_done"/>
+    <param name="cloud_topic" value="/rtabmap/cloud_map"/>
+    <param name="cloud_out_dir" value="$(env HOME)/rtabmap_cloud"/>
+  </node>
+
+  <!-- Your survey node: make it stop after 1 loop -->
+  <node pkg="my_room_world" type="lawnmower_pose.py" name="$(anon lawnmower_pose)" output="screen">
+    <param name="loops" value="1"/>
+    <param name="z" value="2.0"/>
+    <!-- keep your other params -->
+  </node>
+</launch>

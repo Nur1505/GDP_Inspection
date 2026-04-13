@@ -1,0 +1,29 @@
+<launch>
+
+  <!-- D435 topics -->
+  <arg name="rgb"         default="/d435/color/image_raw"/>
+  <arg name="depth"       default="/d435/depth/image_raw"/>
+  <arg name="camera_info" default="/d435/color/camera_info"/>
+  <arg name="odom_topic"  default="/ground_truth/state"/>
+
+  <!-- Sync RGB + Depth -->
+  <node pkg="rtabmap_ros" type="rgbd_sync" name="rgbd_sync" output="screen">
+    <param name="approx_sync" value="true"/>
+    <remap from="rgb/image"       to="$(arg rgb)"/>
+    <remap from="depth/image"     to="$(arg depth)"/>
+    <remap from="rgb/camera_info" to="$(arg camera_info)"/>
+    <remap from="rgbd_image"      to="/rgbd_image"/>
+  </node>
+
+  <!-- RTAB-Map SLAM -->
+  <node pkg="rtabmap_ros" type="rtabmap" name="rtabmap" output="screen">
+    <param name="subscribe_rgbd" value="true"/>
+    <param name="subscribe_odom" value="true"/>
+    <param name="frame_id" value="base_link"/>
+    <param name="odom_frame_id" value="world"/>
+    <param name="cloud_map" value="true"/>
+    <remap from="rgbd_image" to="/rgbd_image"/>
+    <remap from="odom" to="$(arg odom_topic)"/>
+  </node>
+
+</launch>

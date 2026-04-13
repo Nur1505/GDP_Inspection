@@ -135,3 +135,21 @@ publishing and latching message for 3.0 seconds -->
 <!-- ********************start publishing camera images and open the camera view: ************************-->
 <!-- rostopic hz /d435/color/image_raw -->
 <!-- rosrun rqt_image_view rqt_image_view -->
+
+
+
+<!-- chmod +x ~/catkin_ws/src/my_room_world/scripts/mapping_supervisor.py
+cd ~/catkin_ws && catkin_make
+source ~/catkin_ws/devel/setup.bash -->
+<!-- roslaunch my_room_world survey_and_map.launch -->
+
+
+<!-- rosrun pcl_ros pointcloud_to_pcd input:=/rtabmap/cloud_map _prefix:=$HOME/room_ -->
+
+
+
+<!-- RTAB-Map is currently reusing:
+/home/inspection/.ros/rtabmap.db
+
+If you want a fresh map every run, delete it before launching:
+rm -f ~/.ros/rtabmap.db ~/.ros/rtabmap.db.back -->
