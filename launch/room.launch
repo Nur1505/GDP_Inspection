@@ -100,38 +100,3 @@
     <param name="map_origin_file" value="$(find inspection_GDP)/rtabmap_rgb_export/map_origin.json"/>
   </node>
 </launch>
-
-<!-- roslaunch inspection_GDP room.launch -->
-<!-- rosservice call /enable_motors "{enable: true}" -->
-
- <!-- rostopic pub -1 /command/pose geometry_msgs/PoseStamped "{
-  header: {frame_id: 'world'},
-  pose: {
-    position: {x: 1.0, y: 1.0, z: 1.5},
-    orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
-  }
-}"
-publishing and latching message for 3.0 seconds -->
-
-<!-- inspection@inspection-ThinkStation-P320:~/catkin_ws/src$ rostopic pub -1  /command/twist geometry_msgs/TwistStamped "{
-  header: {frame_id: 'world'},
-  twist: {
-    linear:  {x: 0.5, y: 0.3, z: 0.3},
-    angular: {x: 0.0, y: 0.0, z: 0.3}
-  }
-}" -->
-
-<!-- roslaunch hector_quadrotor_gazebo quadrotor_empty_world.launch -->
-<!-- roslaunch hector_quadrotor_gazebo quadrotor_empty_world.launch -->
-
-
-<!-- chmod +x /home/inspection/catkin_ws/src/inspection_GDP/scripts/lawnmower_pose.py -->
-<!-- roslaunch inspection_GDP room.launch -->
-
-<!-- ********************edit the payload on robot *********************-->
-<!-- inspection@inspection-ThinkStation-P320:~/catkin_ws$ rosed hector_quadrotor_description quadrotor.gazebo.xacro -->
-
-
-<!-- ********************start publishing camera images and open the camera view: ************************-->
-<!-- rostopic hz /d435/color/image_raw -->
-<!-- rosrun rqt_image_view rqt_image_view -->
