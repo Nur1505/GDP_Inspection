@@ -4,7 +4,7 @@ Multi-UAV indoor simulation in ROS Melodic + Gazebo 9 for mapping and inspection
 
 This project simulates two UAVs in a custom Gazebo indoor environment:
 
-* **UAV1 (surveyor):** performs lawnmower mapping with RGB-D + lidar
+* **UAV1 (surveyor):** performs lawnmower mapping with RGB-D
 * **UAV2 (inspector):** flies to a detected feature of interest (FOI)
 * RTAB-Map is used for mapping and map export
 * Custom Gazebo models and materials are included in this repository
