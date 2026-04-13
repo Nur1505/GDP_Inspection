@@ -7,7 +7,6 @@ import heapq
 import rospy
 import numpy as np
 import tf
-import csv
 
 from nav_msgs.msg import OccupancyGrid, MapMetaData
 from geometry_msgs.msg import PoseStamped, Quaternion, Pose
@@ -92,178 +91,6 @@ class UAV2AStarPlanner(object):
 
         self.T_world_map = None
         self.T_map_world = None
-
-        self.results_dir = rospy.get_param("~results_dir", os.path.expanduser("~/simulation_results"))
-        self.run_id = rospy.get_param("~run_id", "")
-        self.foi_gt_x = float(rospy.get_param("~foi_gt_x", 0.0))
-        self.foi_gt_y = float(rospy.get_param("~foi_gt_y", 0.0))
-        self.foi_gt_z = float(rospy.get_param("~foi_gt_z", 0.0))
-
-        if not self.run_id:
-            self.run_id = "run_%d" % int(rospy.Time.now().to_sec())
-
-        if not os.path.exists(self.results_dir):
-            os.makedirs(self.results_dir)
-
-        self.summary_csv = os.path.join(self.results_dir, "run_summary_uav2.csv")
-        self.detail_json = os.path.join(self.results_dir, "%s_uav2_metrics.json" % self.run_id)
-
-        self.start_world = None
-        self.goal_world = None
-        self.foi_hover_world = None
-        self.final_home_world = None
-        self.mission_start_time = None
-        self.mission_end_time = None
-
-    def save_uav2_metrics(self):
-        def dist2d(a, b):
-            return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
-
-        hover_error = float("nan")
-        home_error = float("nan")
-        foi_gt_error = float("nan")
-        mission_time = float("nan")
-        success = 0
-
-        if self.foi_hover_world is not None and self.goal_world is not None:
-            hover_error = dist2d(self.foi_hover_world, self.goal_world)
-
-        if self.final_home_world is not None and self.start_world is not None:
-            home_error = dist2d(self.final_home_world, self.start_world)
-
-        if self.foi_hover_world is not None:
-            foi_gt_error = math.sqrt(
-                (self.foi_hover_world[0] - self.foi_gt_x) ** 2 +
-                (self.foi_hover_world[1] - self.foi_gt_y) ** 2 +
-                (self.target_z - self.foi_gt_z) ** 2
-            )
-
-        if self.mission_start_time is not None and self.mission_end_time is not None:
-            mission_time = self.mission_end_time - self.mission_start_time
-
-        if not math.isnan(hover_error) and not math.isnan(home_error):
-            success = 1
-
-        metrics = {
-            "run_id": self.run_id,
-            "uav2_start_x_world_m": self.start_world[0] if self.start_world else float("nan"),
-            "uav2_start_y_world_m": self.start_world[1] if self.start_world else float("nan"),
-            "uav2_goal_x_world_m": self.goal_world[0] if self.goal_world else float("nan"),
-            "uav2_goal_y_world_m": self.goal_world[1] if self.goal_world else float("nan"),
-            "uav2_foi_hover_x_world_m": self.foi_hover_world[0] if self.foi_hover_world else float("nan"),
-            "uav2_foi_hover_y_world_m": self.foi_hover_world[1] if self.foi_hover_world else float("nan"),
-            "uav2_final_home_x_world_m": self.final_home_world[0] if self.final_home_world else float("nan"),
-            "uav2_final_home_y_world_m": self.final_home_world[1] if self.final_home_world else float("nan"),
-            "uav2_hover_error_to_commanded_foi_m": hover_error,
-            "uav2_final_home_error_m": home_error,
-            "uav2_hover_error_to_gt_foi_m": foi_gt_error,
-            "uav2_mission_time_s": mission_time,
-            "uav2_success": success
-        }
-
-        with open(self.detail_json, "w") as f:
-            json.dump(metrics, f, indent=2)
-
-        header = [
-            "run_id",
-            "uav2_start_x_world_m",
-            "uav2_start_y_world_m",
-            "uav2_goal_x_world_m",
-            "uav2_goal_y_world_m",
-            "uav2_foi_hover_x_world_m",
-            "uav2_foi_hover_y_world_m",
-            "uav2_final_home_x_world_m",
-            "uav2_final_home_y_world_m",
-            "uav2_hover_error_to_commanded_foi_m",
-            "uav2_final_home_error_m",
-            "uav2_hover_error_to_gt_foi_m",
-            "uav2_mission_time_s",
-            "uav2_success"
-        ]
-
-        file_exists = os.path.exists(self.summary_csv)
-        with open(self.summary_csv, "a") as f:
-            writer = csv.DictWriter(f, fieldnames=header)
-            if not file_exists:
-                writer.writeheader()
-            writer.writerow(metrics)
-
-        rospy.loginfo("Saved UAV2 metrics to %s", self.summary_csv)
-
-    def save_uav2_metrics(self):
-        def dist2d(a, b):
-            return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
-
-        hover_error = float("nan")
-        home_error = float("nan")
-        foi_gt_error = float("nan")
-        mission_time = float("nan")
-        success = 0
-
-        if self.foi_hover_world is not None and self.goal_world is not None:
-            hover_error = dist2d(self.foi_hover_world, self.goal_world)
-
-        if self.final_home_world is not None and self.start_world is not None:
-            home_error = dist2d(self.final_home_world, self.start_world)
-
-        if self.foi_hover_world is not None:
-            foi_gt_error = math.sqrt(
-                (self.foi_hover_world[0] - self.foi_gt_x) ** 2 +
-                (self.foi_hover_world[1] - self.foi_gt_y) ** 2 +
-                (self.target_z - self.foi_gt_z) ** 2
-            )
-
-        if self.mission_start_time is not None and self.mission_end_time is not None:
-            mission_time = self.mission_end_time - self.mission_start_time
-
-        if not math.isnan(hover_error) and not math.isnan(home_error):
-            success = 1
-
-        metrics = {
-            "run_id": self.run_id,
-            "uav2_start_x_world_m": self.start_world[0] if self.start_world else float("nan"),
-            "uav2_start_y_world_m": self.start_world[1] if self.start_world else float("nan"),
-            "uav2_goal_x_world_m": self.goal_world[0] if self.goal_world else float("nan"),
-            "uav2_goal_y_world_m": self.goal_world[1] if self.goal_world else float("nan"),
-            "uav2_foi_hover_x_world_m": self.foi_hover_world[0] if self.foi_hover_world else float("nan"),
-            "uav2_foi_hover_y_world_m": self.foi_hover_world[1] if self.foi_hover_world else float("nan"),
-            "uav2_final_home_x_world_m": self.final_home_world[0] if self.final_home_world else float("nan"),
-            "uav2_final_home_y_world_m": self.final_home_world[1] if self.final_home_world else float("nan"),
-            "uav2_hover_error_to_commanded_foi_m": hover_error,
-            "uav2_final_home_error_m": home_error,
-            "uav2_hover_error_to_gt_foi_m": foi_gt_error,
-            "uav2_mission_time_s": mission_time,
-            "uav2_success": success
-        }
-
-        with open(self.detail_json, "w") as f:
-            json.dump(metrics, f, indent=2)
-
-        header = [
-            "run_id",
-            "uav2_start_x_world_m",
-            "uav2_start_y_world_m",
-            "uav2_goal_x_world_m",
-            "uav2_goal_y_world_m",
-            "uav2_foi_hover_x_world_m",
-            "uav2_foi_hover_y_world_m",
-            "uav2_final_home_x_world_m",
-            "uav2_final_home_y_world_m",
-            "uav2_hover_error_to_commanded_foi_m",
-            "uav2_final_home_error_m",
-            "uav2_hover_error_to_gt_foi_m",
-            "uav2_mission_time_s",
-            "uav2_success"
-        ]
-
-        file_exists = os.path.exists(self.summary_csv)
-        with open(self.summary_csv, "a") as f:
-            writer = csv.DictWriter(f, fieldnames=header)
-            if not file_exists:
-                writer.writeheader()
-            writer.writerow(metrics)
-
-        rospy.loginfo("Saved UAV2 metrics to %s", self.summary_csv)
 
     def load_saved_map(self, json_file):
         if not os.path.exists(json_file):
@@ -373,36 +200,6 @@ class UAV2AStarPlanner(object):
         x = ox + (gx + 0.5) * res
         y = oy + (gy + 0.5) * res
         return x, y
-    def interpolate_line_map(self, x0, y0, x1, y1, step=0.25):
-        dx = x1 - x0
-        dy = y1 - y0
-        dist = math.hypot(dx, dy)
-
-        if dist < 1e-6:
-            return [(x1, y1)]
-
-        n = max(1, int(math.ceil(dist / step)))
-        pts = []
-        for i in range(1, n + 1):
-            t = float(i) / float(n)
-            # smoothstep interpolation
-            ts = t * t * (3.0 - 2.0 * t)
-            xi = x0 + dx * ts
-            yi = y0 + dy * ts
-            pts.append((xi, yi))
-        return pts
-
-    def fly_map_waypoints(self, map_points, z, label="Path"):
-        rospy.loginfo("%s: %d map-frame waypoints", label, len(map_points))
-
-        for i, (map_x, map_y) in enumerate(map_points):
-            world_x, world_y, _ = self.transform_map_to_world_xy(map_x, map_y, 0.0)
-
-            rospy.loginfo("%s waypoint %d/%d -> map (%.3f, %.3f) -> world (%.3f, %.3f, %.3f)",
-                          label, i + 1, len(map_points), map_x, map_y, world_x, world_y, z)
-
-            self.publish_pose_for_duration(world_x, world_y, z,
-                                           yaw=0.0, duration=self.waypoint_reach_time)
 
     def inflate_map(self, occ, radius):
         if radius <= 0:
@@ -575,29 +372,20 @@ class UAV2AStarPlanner(object):
         if not ok:
             rospy.logwarn("Motors not enabled; continuing anyway.")
 
-        # Initial UAV2 pose in world
         trans, rot = self.get_uav2_world_pose()
         start_world_x = float(trans[0])
         start_world_y = float(trans[1])
         start_world_z = float(trans[2])
 
-        self.start_world = (start_world_x, start_world_y)
-        self.mission_start_time = rospy.Time.now().to_sec()
-
-        # Goal in map frame
         goal_map_x, goal_map_y = self.load_goal_map_from_file()
 
-        # Start in map frame
         start_map_x, start_map_y, start_map_z = self.transform_world_to_map_xy(
             start_world_x, start_world_y, start_world_z
         )
 
-        # Goal also expressed in world just for logging
         goal_world_x, goal_world_y, goal_world_z = self.transform_map_to_world_xy(
             goal_map_x, goal_map_y, 0.0
         )
-        
-        self.goal_world = (goal_world_x, goal_world_y)
 
         rospy.loginfo("UAV2 world start:   (%.3f, %.3f, %.3f)",
                       start_world_x, start_world_y, start_world_z)
@@ -607,87 +395,67 @@ class UAV2AStarPlanner(object):
         rospy.loginfo("FOI approx in world:(%.3f, %.3f, %.3f)",
                       goal_world_x, goal_world_y, goal_world_z)
 
-        # Straight-line map-frame waypoints from start to goal
-        outbound_map_points = self.interpolate_line_map(
-            start_map_x, start_map_y, goal_map_x, goal_map_y, step=0.25
-        )
+        occ = self.build_binary_occupancy()
 
-        rospy.loginfo("Outbound straight-line path has %d map waypoints",
-                      len(outbound_map_points))
+        start_cell = self.map_metric_to_grid(start_map_x, start_map_y)
 
-        # Stabilize and take off
+        free_start = self.nearest_free_cell(occ, start_cell, max_radius=20)
+        if free_start is None:
+            raise RuntimeError("Could not find a nearby free start cell from %s" % (str(start_cell),))
+
+        if free_start != start_cell:
+            rospy.logwarn("Start cell %s occupied, using nearest free cell %s",
+                        str(start_cell), str(free_start))
+        start_cell = free_start
+
+        goal_cell = self.map_metric_to_grid(goal_map_x, goal_map_y)
+
+        rospy.loginfo("Start cell: %s", str(start_cell))
+        rospy.loginfo("Goal  cell: %s", str(goal_cell))
+
+        path_cells = self.astar(occ, start_cell, goal_cell)
+        if path_cells is None:
+            raise RuntimeError("A* could not find a path")
+
+        rospy.loginfo("Raw path length: %d cells", len(path_cells))
+
+        path_cells = self.downsample_path(path_cells, self.path_sampling_step)
+        rospy.loginfo("Downsampled path length: %d waypoints", len(path_cells))
+
         rospy.loginfo("Stabilizing at current pose before takeoff ...")
         self.publish_pose_for_duration(start_world_x, start_world_y, start_world_z,
-                                       yaw=0.0, duration=1.0)
+                                    yaw=0.0, duration=1.0)
 
         rospy.loginfo("Taking off gradually to target altitude %.2f ...", self.target_z)
         steps = 30
         for i in range(steps):
             z = start_world_z + (self.target_z - start_world_z) * float(i + 1) / float(steps)
             self.publish_pose_for_duration(start_world_x, start_world_y, z,
-                                           yaw=0.0, duration=0.1)
+                                        yaw=0.0, duration=0.1)
 
-        rospy.loginfo("Hovering at target altitude before outbound flight ...")
+        rospy.loginfo("Hovering at target altitude before path following ...")
         self.publish_pose_for_duration(start_world_x, start_world_y, self.target_z,
-                                       yaw=0.0, duration=2.0)
+                                    yaw=0.0, duration=2.0)
 
-        # Refresh actual pose after takeoff
         trans2, rot2 = self.get_uav2_world_pose()
         current_world_x = float(trans2[0])
         current_world_y = float(trans2[1])
         current_world_z = float(trans2[2])
 
-        rospy.loginfo("Post-takeoff UAV2 world pose: (%.3f, %.3f, %.3f)",
-                      current_world_x, current_world_y, current_world_z)
-
-        # Recompute map start after takeoff drift
-        current_map_x, current_map_y, current_map_z = self.transform_world_to_map_xy(
-            current_world_x, current_world_y, current_world_z
-        )
-
-        # Rebuild outbound line from actual current position
-        outbound_map_points = self.interpolate_line_map(
-            current_map_x, current_map_y, goal_map_x, goal_map_y, step=0.25
-        )
-
-        self.fly_map_waypoints(outbound_map_points, self.target_z, label="Outbound")
-
-        rospy.loginfo("Hovering at FOI ...")
-        self.publish_pose_for_duration(goal_world_x, goal_world_y, self.target_z,
-                                       yaw=0.0, duration=2.0)
+        rospy.loginfo("Post-takeoff UAV2 world pose: (%.3f, %.3f, %.3f)", current_world_x, current_world_y, current_world_z)
         
-        trans_hover, rot_hover = self.get_uav2_world_pose()
-        self.foi_hover_world = (float(trans_hover[0]), float(trans_hover[1]))
-        
-        # Return line in map frame: goal back to original start
-        return_map_points = self.interpolate_line_map(
-            goal_map_x, goal_map_y, start_map_x, start_map_y, step=0.25
-        )
+        for i, cell in enumerate(path_cells):
+            map_x, map_y = self.grid_to_map_metric(cell[0], cell[1])
+            world_x, world_y, _ = self.transform_map_to_world_xy(map_x, map_y, 0.0)
 
-        self.fly_map_waypoints(return_map_points, self.target_z, label="Return")
+            rospy.loginfo("Waypoint %d/%d -> map (%.3f, %.3f) -> world (%.3f, %.3f, %.3f)",
+                          i + 1, len(path_cells), map_x, map_y, world_x, world_y, self.target_z)
 
-        rospy.loginfo("Hovering at home before landing ...")
-        self.publish_pose_for_duration(start_world_x, start_world_y, self.target_z,
-                                       yaw=0.0, duration=2.0)
+            self.publish_pose_for_duration(world_x, world_y, self.target_z,
+                                           yaw=0.0, duration=self.waypoint_reach_time)
 
-        rospy.loginfo("Landing gradually ...")
-        land_steps = 30
-        for i in range(land_steps):
-            z = self.target_z + (start_world_z - self.target_z) * float(i + 1) / float(land_steps)
-            self.publish_pose_for_duration(start_world_x, start_world_y, z,
-                                           yaw=0.0, duration=0.1)
+        rospy.loginfo("UAV2 A* mission complete.")
 
-        rospy.loginfo("Holding landed pose ...")
-        self.publish_pose_for_duration(start_world_x, start_world_y, start_world_z,
-                                       yaw=0.0, duration=1.0)
-        
-        trans_home, rot_home = self.get_uav2_world_pose()
-        self.final_home_world = (float(trans_home[0]), float(trans_home[1]))
-        self.mission_end_time = rospy.Time.now().to_sec()
-
-        self.save_uav2_metrics()
-
-        rospy.loginfo("UAV2 straight-line map-frame mission complete.")
 if __name__ == "__main__":
     try:
         planner = UAV2AStarPlanner()

@@ -12,15 +12,15 @@ OUTPUT_CSV = "./rtabmap_rgb_export/apriltag_results.csv"
 
 TAG_SIZE = 0.5  # tag plane size in Gazebo, meters
 
-# Update these for your CURRENT camera resolution/intrinsics
+# Update these for CURRENT camera resolution
 FX = 320.255
 FY = 320.255
 CX = 320.5
 CY = 240.5
 
 TAG_FAMILY = "tag36h11"
-TARGET_TAG_ID = None   # keep None while debugging
-UPSCALE = 2.0          # helps tiny tags a bit
+TARGET_TAG_ID = None  # set to an integer tag ID to filter for that tag only, or None to use all detected tags
+UPSCALE = 2.0         # helps tiny tags but increases runtime (set to 1.0 to disable)
 DEBUG_PRINT_ALL = True
 OUTPUT_JSON = "./rtabmap_rgb_export/apriltag_median_map.json"
 
@@ -61,7 +61,7 @@ def load_poses_by_id(file_path):
             try:
                 # Format:
                 # timestamp x y z qx qy qz qw id
-                timestamp = float(parts[0])   # not used for matching
+                timestamp = float(parts[0])   
                 x = float(parts[1])
                 y = float(parts[2])
                 z = float(parts[3])

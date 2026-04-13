@@ -57,6 +57,3 @@ if __name__ == "__main__":
     rospy.init_node("pose_to_gazebo")
     PoseToGazebo()
     rospy.spin()
-
-
-    # chmod +x ~/catkin_ws/src/my_room_world/scripts/pose_to_gazebo.py

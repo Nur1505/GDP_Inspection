@@ -41,10 +41,6 @@ def load_csv_xy(csv_file):
 
 
 def transform_map_to_world(point_map, map_origin_file):
-    """
-    Translation-only conversion for now.
-    If later needed, upgrade to full rotation transform.
-    """
     with open(map_origin_file, "r") as f:
         origin = json.load(f)
 

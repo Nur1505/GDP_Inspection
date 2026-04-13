@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+
+<robot name="quadrotor" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:include filename="$(find hector_quadrotor_description)/urdf/quadrotor.urdf.xacro" />
+    <xacro:include filename="$(find hector_quadrotor_gazebo)/urdf/quadrotor_plugins.gazebo.xacro" />
+    <xacro:include filename="$(find inspection_GDP)/urdf/hector_360_lidar.xacro"/>
+    <xacro:include filename="$(find inspection_GDP)/urdf/hector_stereo_downward.xacro"/>
+    <xacro:include filename="$(find inspection_GDP)/urdf/simple_rgbd_camera.xacro"/>
+    <xacro:include filename="$(find realsense_ros_gazebo)/xacro/depthcam.xacro"/>
+    <xacro:add_2d_360_lidar
+         parent_link="base_link"
+         topic="/scan"
+         frame="lidar_link"
+         x="0.0" y="0.0" z="0.15"
+         roll="0.0" pitch="0.0" yaw="0.0"
+         update_rate="6"
+         samples="667"
+         min_range="0.05"
+         max_range="12.0"/>
+    <!--<xacro:add_stereo_downward
+            parent_link="base_link"
+            ns="stereo"
+            frame="stereo_link"
+            x="0.0" y="0.0" z="-0.15"
+            roll="0.0" pitch="1.5708" yaw="0.0"
+            baseline="0.10"
+            width="424" height="240"
+            hfov="1.57"
+            update_rate="30"/>-->
+    <!--<xacro:realsense_d435 sensor_name="d435" parent_link="base_link" rate="30">
+            <origin rpy="0 1.5708 0" xyz="0.0 0.0 -0.1"/>
+        </xacro:realsense_d435>-->
+    <xacro:simple_rgbd_camera
+        parent_link="base_link"
+        topic_ns="rgbd"
+        frame="rgbd_color_optical_frame"
+        xyz="0 0 -0.10"
+        rpy="0 1.5708 0"
+        width="640"
+        height="480"
+        hfov="1.57"
+        rate="10"/>
+</robot>

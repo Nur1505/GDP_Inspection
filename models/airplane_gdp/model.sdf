@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<sdf version='1.6'>
+ <model name='airplane_gdp'>
+   <static>true</static>
+   <pose>0 0 0 0 0 0</pose>
+
+   <link name='airplane_link'>
+     <collision name='collision'>
+       <geometry>
+         <mesh>
+           <uri>model://airplane_gdp/meshes/airplane.STL</uri>
+           <scale>0.25 0.25 0.25</scale>
+         </mesh>
+       </geometry>
+     </collision>
+
+     <visual name='visual'>
+       <geometry>
+         <mesh>
+           <uri>model://airplane_gdp/meshes/airplane.STL</uri>
+           <scale>0.25 0.25 0.25</scale>
+         </mesh>
+       </geometry>
+     </visual>
+
+     <visual name='apriltag_top'>
+        <pose>2 0 1.32 0 0 0</pose>
+        <geometry>
+          <plane>
+            <size>0.3 0.3 0.001</size>
+          </plane>
+        </geometry>
+        <material>
+          <script>
+            <uri>model://airplane_gdp/materials/scripts</uri>
+            <uri>model://airplane_gdp/materials/textures</uri>
+            <name>Apriltag/Tag36h11_0</name>
+          </script>
+        </material>
+      </visual>
+   </link>
+ </model>
+</sdf>
+

@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="add_2d_360_lidar"
+               params="parent_link
+                       lidar_name:=lidar
+                       topic:=/scan
+                       frame:=lidar_link
+                       x:=0.0 y:=0.0 z:=0.15
+                       roll:=0.0 pitch:=0.0 yaw:=0.0
+                       update_rate:=6
+                       min_range:=0.05
+                       max_range:=12.0
+                       samples:=667
+                       noise_stddev:=0.02">
+
+    <link name="${frame}">
+      <inertial>
+        <mass value="0.0001"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
+      </inertial>
+    </link>
+
+    <joint name="${lidar_name}_joint" type="fixed">
+      <parent link="${parent_link}"/>
+      <child link="${frame}"/>
+      <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
+    </joint>
+
+    <gazebo reference="${frame}">
+      <sensor type="ray" name="${lidar_name}">
+        <pose>0 0 0 0 0 0</pose>
+        <update_rate>${update_rate}</update_rate>
+
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>${samples}</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.14159265</min_angle>
+              <max_angle> 3.14159265</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>${min_range}</min>
+            <max>${max_range}</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>${noise_stddev}</stddev>
+          </noise>
+        </ray>
+
+        <plugin name="gazebo_ros_laser" filename="libgazebo_ros_laser.so">
+          <topicName>${topic}</topicName>
+          <frameName>${frame}</frameName>
+        </plugin>
+      </sensor>
+    </gazebo>
+
+  </xacro:macro>
+
+</robot>

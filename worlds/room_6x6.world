@@ -60,10 +60,6 @@
     <model name="room_40x30">
       <static>true</static>
 
-      <!-- Inner room: 40x30 m
-           Wall thickness: 0.10 m
-           Wall height: 20.00 m -->
-
       <!-- North wall (along X, +Y) -->
       <link name="wall_n">
         <pose>0 15.05 10.0 0 0 0</pose>

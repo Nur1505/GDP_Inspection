@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Add a downward-looking stereo camera using Gazebo multicamera plugin -->
+  <xacro:macro name="add_stereo_downward" params="
+      parent_link
+      ns
+      frame
+      x y z
+      roll pitch yaw
+      baseline
+      width height
+      hfov
+      update_rate
+  ">
+
+    <!-- Mount link -->
+    <link name="${frame}"/>
+
+    <joint name="${frame}_joint" type="fixed">
+      <parent link="${parent_link}"/>
+      <child link="${frame}"/>
+      <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
+    </joint>
+
+    <!-- Gazebo sensor: two cameras -->
+    <gazebo reference="${frame}">
+      <sensor type="multicamera" name="${ns}_stereo">
+        <always_on>true</always_on>
+        <update_rate>${update_rate}</update_rate>
+
+        <!-- IMPORTANT:
+             Gazebo camera looks along +X axis of the camera frame.
+             To look DOWN in a typical ROS base_link (X forward, Z up),
+             rotate so +X points to -Z => pitch = -1.5708 (about Y).
+        -->
+        <pose>0 0 0 0 0 0</pose>
+
+        <!-- Left camera -->
+        <camera name="left">
+          <pose>0 ${baseline/2.0} 0 0 0 0</pose>
+          <horizontal_fov>${hfov}</horizontal_fov>
+          <image>
+            <width>${width}</width>
+            <height>${height}</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip><near>0.3</near><far>20</far></clip>
+        </camera>
+
+        <!-- Right camera -->
+        <camera name="right">
+          <pose>0 -${baseline/2.0} 0 0 0 0</pose>
+          <horizontal_fov>${hfov}</horizontal_fov>
+          <image>
+            <width>${width}</width>
+            <height>${height}</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip><near>0.3</near><far>20</far></clip>
+        </camera>
+
+        <plugin name="stereo_controller" filename="libgazebo_ros_multicamera.so">
+            <robotNamespace>/stereo</robotNamespace>
+            <frameName>/stereo_link</frameName>
+            <imageTopicName>image_raw</imageTopicName>
+            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+            <hackBaseline>${baseline}</hackBaseline>
+        </plugin>
+      </sensor>
+    </gazebo>
+
+  </xacro:macro>
+</robot>

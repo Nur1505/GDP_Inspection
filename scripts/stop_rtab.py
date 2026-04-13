@@ -37,11 +37,11 @@ def main():
     db_path = rospy.get_param("~db_path", os.path.expanduser("~/.ros/rtabmap.db"))
     export_dir = rospy.get_param(
         "~export_dir",
-        os.path.expanduser("~/catkin_ws/src/my_room_world/rtabmap_rgb_export")
+        os.path.expanduser("~/catkin_ws/src/inspection_GDP/rtabmap_rgb_export")
     )
     apriltag_script = rospy.get_param(
         "~apriltag_script",
-        os.path.expanduser("~/catkin_ws/src/my_room_world/apriltag_location.py")
+        os.path.expanduser("~/catkin_ws/src/inspection_GDP/apriltag_location.py")
     )
     map_topic = rospy.get_param("~map_topic", "/proj_map")
 
@@ -56,7 +56,7 @@ def main():
         os.makedirs(export_dir)
 
     # --------------------------------------------------
-    # Save occupancy map BEFORE killing RTAB-Map
+    # Save occupancy map to file
     # --------------------------------------------------
     rospy.loginfo("Waiting for occupancy grid on %s ...", map_topic)
     try:
@@ -70,7 +70,7 @@ def main():
     rospy.loginfo("Saved occupancy grid to %s", occ_file)
 
     # --------------------------------------------------
-    # Now stop RTAB-Map nodes
+    # Stop RTAB-Map nodes
     # --------------------------------------------------
     rospy.loginfo("Lawnmower finished. Stopping RTAB-Map nodes...")
     kill_node("/rtabmap")
@@ -104,28 +104,10 @@ def main():
         rospy.logerr("apriltag_location.py failed with code %d", ret)
         return
 
-    rospy.loginfo("Launching UAV2 A* planner...")
-    # ret = subprocess.call([
-    #     "rosrun", "my_room_world", "uav2_astar_planner.py",
-    #     "_saved_map_file:=" + occ_file,
-    #     "_pose_topic:=/uav2/command/pose",
-    #     "_enable_motors_srv:=/uav2/enable_motors",
-    #     "_world_frame:=uav2/world",
-    #     "_base_frame:=uav2/base_link",
-    #     "_command_frame:=uav2/world",
-    #     "_target_z:=3.0",
-    #     "_hover_before_start:=2.0",
-    #     "_waypoint_reach_time:=2.0",
-    #     "_rate:=10.0",
-    #     "_occupancy_threshold:=50",
-    #     "_inflation_radius_cells:=2",
-    #     "_path_sampling_step:=5",
-    #     "_map_origin_file:=" + os.path.join(export_dir, "map_origin.json"),
-    #     "_tag_map_file:=" + os.path.join(export_dir, "apriltag_median_map.json")
-    # ])
+    rospy.loginfo("Launching UAV2 planner...")
 
     ret = subprocess.call([
-        "rosrun", "my_room_world", "uav2_astar_planner.py",
+        "rosrun", "inspection_GDP", "uav2_planner.py",
         "_saved_map_file:=" + occ_file,
         "_pose_topic:=/uav2/command/pose",
         "_enable_motors_srv:=/uav2/enable_motors",
@@ -143,13 +125,13 @@ def main():
         "_tag_map_file:=" + os.path.join(export_dir, "apriltag_median_map.json"),
         "_results_dir:=" + os.path.expanduser("~/simulation_results"),
         "_run_id:=run_%d" % int(time.time()),
-        "_foi_gt_x:=4.0",
+        "_foi_gt_x:=2.0",
         "_foi_gt_y:=0.0",
-        "_foi_gt_z:=2.6"
+        "_foi_gt_z:=2.1"
     ])
 
     if ret != 0:
-        rospy.logerr("uav2_astar_planner.py failed with code %d", ret)
+        rospy.logerr("uav2_planner.py failed with code %d", ret)
         return
 
     rospy.loginfo("Full post-processing + planning pipeline completed successfully.")

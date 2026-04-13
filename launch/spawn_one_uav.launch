@@ -1,5 +1,5 @@
 <launch>
-  <arg name="model" default="$(find hector_quadrotor_description)/urdf/quadrotor.gazebo.xacro"/>
+  <arg name="model" default="$(find inspection_GDP)/urdf/quadrotor_custom.gazebo.xacro"/>
   <arg name="ns"/>
   <arg name="name" default="$(arg ns)"/>
   <arg name="tf_prefix" default="$(arg ns)"/>

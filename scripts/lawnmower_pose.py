@@ -52,7 +52,6 @@ def make_waypoints(room_size_x=30.0, room_size_y=20.0, margin=2.0, lane_step=1.0
 def main():
     rospy.init_node("lawnmower_pose")
 
-    # Optional startup delay
     delay = float(rospy.get_param("~start_delay", 0.0))
     if delay > 0:
         rospy.loginfo("Delaying start by %.1f seconds...", delay)
@@ -130,22 +129,21 @@ def main():
 
     # Publish repeatedly until altitude is reached
     takeoff_rate = rospy.Rate(10)
-    for _ in range(50):  # ~5 seconds of vertical climb commands
+    for _ in range(50):  #5 seconds of vertical climb commands
         msg.header.stamp = rospy.Time.now()
         pub.publish(msg)
         takeoff_rate.sleep()
 
     # -------------------------------
-    # 2. Hover for 2 seconds
+    # 2. Hover for a moment before starting lawnmower pattern
     # -------------------------------
-    rospy.loginfo("Hovering for 2 seconds...")
+    rospy.loginfo("Hovering...")
     hover_rate = rospy.Rate(10)
     for _ in range(60):
         msg.header.stamp = rospy.Time.now()
         pub.publish(msg)
         hover_rate.sleep()
 
-    # Now ready to start lawnmower transitions
     rospy.loginfo("Starting lawnmower pattern...")
 
     started_pub = rospy.Publisher("/lawnmower_started", Bool, queue_size=1, latch=True)
@@ -173,7 +171,7 @@ def main():
             finished_pub.publish(Bool(data=True)) 
             rospy.loginfo("Published lawnmower finished signal.")
             rospy.sleep(0.5)
-            return # Exit node cleanly
+            return 
     
         next_idx = (idx + 1) % len(waypoints)
         x1, y1, yaw1 = waypoints[next_idx]
@@ -204,18 +202,6 @@ def main():
             msg.pose.orientation = yaw_to_quat(fixed_yaw)
             pub.publish(msg)
 
-        # # Hold at waypoint
-        # #for _ in range(ticks_per_wp):
-        # for _ in range(int(1.0 * rate_hz)):
-        #     msg.header.stamp = rospy.Time.now()
-        #     msg.pose.position.x = x1
-        #     msg.pose.position.y = y1
-        #     msg.pose.position.z = z
-        #     msg.pose.orientation = yaw_to_quat(fixed_yaw)
-        #     pub.publish(msg)
-        #     r.sleep()
-
-        # Advance
         idx = next_idx
         x0, y0, yaw0 = x1, y1, yaw1
 

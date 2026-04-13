@@ -1,7 +1,10 @@
 <launch>
-  <arg name="world" default="$(find my_room_world)/worlds/room_6x6.world"/>
+  <arg name="world" default="$(find inspection_GDP)/worlds/room_6x6.world"/>
   <arg name="gui" default="true"/>
 
+  <env name="GAZEBO_MODEL_PATH" value="$(find inspection_GDP)/models:$(optenv GAZEBO_MODEL_PATH)" />
+  <env name="GAZEBO_RESOURCE_PATH" value="$(find inspection_GDP):$(optenv GAZEBO_RESOURCE_PATH)" />
+ 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(arg world)"/>
     <arg name="gui" value="$(arg gui)"/>
@@ -10,7 +13,7 @@
   </include>
 
 <!-- UAV1: surveyor -->
-  <include file="$(find my_room_world)/launch/spawn_one_uav.launch">
+  <include file="$(find inspection_GDP)/launch/spawn_one_uav.launch">
     <arg name="ns" value="uav1"/>
     <arg name="x" value="-5.0"/>
     <arg name="y" value="-5.0"/>
@@ -18,7 +21,7 @@
   </include>
 
   <!-- UAV2: inspector -->
-  <include file="$(find my_room_world)/launch/spawn_one_uav.launch">
+  <include file="$(find inspection_GDP)/launch/spawn_one_uav.launch">
     <arg name="ns" value="uav2"/>
     <arg name="x" value="5.0"/>
     <arg name="y" value="-5.0"/>
@@ -26,7 +29,7 @@
   </include>
 
 <!-- Surveyor lawnmower -->
-<node pkg="my_room_world" type="lawnmower_pose.py" name="lawnmower_pose" output="screen">
+<node pkg="inspection_GDP" type="lawnmower_pose.py" name="lawnmower_pose" output="screen">
   <param name="pose_topic" value="/uav1/command/pose"/>
   <param name="enable_motors_srv" value="/uav1/enable_motors"/>
   <param name="switch_controller_srv" value="/uav1/controller_manager/switch_controller"/>
@@ -34,11 +37,11 @@
   <param name="command_frame" value="uav1/world"/>
 
   <param name="start_delay" value="5.0"/>
-  <param name="room_size_x" value="20.0"/>
-  <param name="room_size_y" value="20.0"/>
+  <param name="room_size_x" value="10.0"/>
+  <param name="room_size_y" value="10.0"/>
   <param name="margin" value="1.0"/>
   <param name="lane_step" value="1.0"/>
-  <param name="z" value="4.0"/>
+  <param name="z" value="5.0"/>
   <param name="hold_time" value="0.0"/>
   <param name="rate" value="10.0"/>
   <param name="transition_time" value="40.0"/>
@@ -48,7 +51,7 @@
 </node>
 
  <node pkg="gazebo_ros" type="spawn_model" name="spawn_aircraft" output="screen"
-      args="-sdf -file $(env HOME)/.gazebo/models/airplane_gdp/model.sdf -model airplane_gdp -x 0 -y 0 -z 0.1" /> 
+      args="-sdf -file $(find inspection_GDP)/models/airplane_gdp/model.sdf -model airplane_gdp -x 0 -y 0 -z 0.1" /> 
 
 
 <!-- Surveyor camera TF only -->
@@ -62,20 +65,20 @@
         args="0 0 0 -1.5708 0 -1.5708 uav1/rgbd_link uav1/rgbd_depth_optical_frame 100" />
 
   <!-- RTAB launcher: Surveyor only -->
-  <node pkg="my_room_world" type="launch_rtab.py"
+  <node pkg="inspection_GDP" type="launch_rtab.py"
         name="delayed_rtabmap_launcher" output="screen">
-    <param name="map_origin_file" value="$(find my_room_world)/rtabmap_rgb_export/map_origin.json"/>
+    <param name="map_origin_file" value="$(find inspection_GDP)/rtabmap_rgb_export/map_origin.json"/>
   </node>
 
   <!-- Stop RTAB + FOI pipeline -->
-<node pkg="my_room_world" type="stop_rtab.py" name="rtab_stop_watcher" output="screen">
+<node pkg="inspection_GDP" type="stop_rtab.py" name="rtab_stop_watcher" output="screen">
   <param name="db_path" value="$(env HOME)/.ros/rtabmap.db"/>
-  <param name="export_dir" value="$(find my_room_world)/rtabmap_rgb_export"/>
-  <param name="apriltag_script" value="$(find my_room_world)/apriltag_location.py"/>
+  <param name="export_dir" value="$(find inspection_GDP)/rtabmap_rgb_export"/>
+  <param name="apriltag_script" value="$(find inspection_GDP)/apriltag_location.py"/>
   <param name="map_topic" value="/proj_map"/>
 </node>
 
-  <node pkg="my_room_world" type="mission_metrics_logger.py" name="mission_metrics_logger" output="screen">
+  <node pkg="inspection_GDP" type="mission_metrics_logger.py" name="mission_metrics_logger" output="screen">
     <param name="results_dir" value="$(env HOME)/simulation_results"/>
     <param name="run_id" value="$(anon simrun)"/>
 
@@ -93,12 +96,12 @@
     <param name="uav1_est_topic" value="/uav1/odom"/>
     <param name="map_topic" value="/proj_map"/>
     <param name="finished_topic" value="/lawnmower_finished"/>
-    <param name="foi_file" value="$(find my_room_world)/rtabmap_rgb_export/apriltag_median_map.json"/>
-    <param name="map_origin_file" value="$(find my_room_world)/rtabmap_rgb_export/map_origin.json"/>
+    <param name="foi_file" value="$(find inspection_GDP)/rtabmap_rgb_export/apriltag_median_map.json"/>
+    <param name="map_origin_file" value="$(find inspection_GDP)/rtabmap_rgb_export/map_origin.json"/>
   </node>
 </launch>
 
-<!-- roslaunch my_room_world room.launch -->
+<!-- roslaunch inspection_GDP room.launch -->
 <!-- rosservice call /enable_motors "{enable: true}" -->
 
  <!-- rostopic pub -1 /command/pose geometry_msgs/PoseStamped "{
@@ -122,8 +125,8 @@ publishing and latching message for 3.0 seconds -->
 <!-- roslaunch hector_quadrotor_gazebo quadrotor_empty_world.launch -->
 
 
-<!-- chmod +x /home/inspection/catkin_ws/src/my_room_world/scripts/lawnmower_pose.py -->
-<!-- roslaunch my_room_world room.launch -->
+<!-- chmod +x /home/inspection/catkin_ws/src/inspection_GDP/scripts/lawnmower_pose.py -->
+<!-- roslaunch inspection_GDP room.launch -->
 
 <!-- ********************edit the payload on robot *********************-->
 <!-- inspection@inspection-ThinkStation-P320:~/catkin_ws$ rosed hector_quadrotor_description quadrotor.gazebo.xacro -->

@@ -13,7 +13,7 @@ def main():
 
     save_file = rospy.get_param(
         "~map_origin_file",
-        os.path.expanduser("~/catkin_ws/src/my_room_world/rtabmap_rgb_export/map_origin.json")
+        os.path.expanduser("~/catkin_ws/src/inspection_GDP/rtabmap_rgb_export/map_origin.json")
     )
 
     rgb_topic = rospy.get_param("~rgb_topic", "/uav1/rgbd/color/image_raw")
@@ -54,7 +54,7 @@ def main():
         
     subprocess.call([
         "roslaunch",
-        "my_room_world",
+        "inspection_GDP",
         "vo_final.launch"
     ])
 

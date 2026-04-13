@@ -49,5 +49,3 @@ if __name__ == "__main__":
     rospy.init_node("perfect_odom")
     PerfectOdomPublisher()
     rospy.spin()
-
-    # chmod +x ~/catkin_ws/src/my_room_world/scripts/perfect_odom.py

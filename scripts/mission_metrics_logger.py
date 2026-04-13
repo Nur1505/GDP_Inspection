@@ -31,11 +31,11 @@ class MissionMetricsLogger(object):
 
         self.foi_file = rospy.get_param(
             "~foi_file",
-            os.path.expanduser("~/catkin_ws/src/my_room_world/rtabmap_rgb_export/apriltag_median_map.json")
+            os.path.expanduser("~/catkin_ws/src/inspection_GDP/rtabmap_rgb_export/apriltag_median_map.json")
         )
         self.map_origin_file = rospy.get_param(
             "~map_origin_file",
-            os.path.expanduser("~/catkin_ws/src/my_room_world/rtabmap_rgb_export/map_origin.json")
+            os.path.expanduser("~/catkin_ws/src/inspection_GDP/rtabmap_rgb_export/map_origin.json")
         )
 
         if not self.run_id:
@@ -113,11 +113,29 @@ class MissionMetricsLogger(object):
             rospy.logwarn("Not enough UAV1 samples for pose error.")
             return float("nan"), float("nan"), float("nan"), float("nan")
 
-        gt_times = np.array([x[0] for x in self.uav1_gt], dtype=np.float64)
-        gt_xyz = np.array([[x[1], x[2], x[3]] for x in self.uav1_gt], dtype=np.float64)
+        gt = np.array(self.uav1_gt, dtype=np.float64)
+        est = np.array(self.uav1_est, dtype=np.float64)
 
-        est_times = np.array([x[0] for x in self.uav1_est], dtype=np.float64)
-        est_xyz = np.array([[x[1], x[2], x[3]] for x in self.uav1_est], dtype=np.float64)
+        gt = gt[np.all(np.isfinite(gt), axis=1)]
+        est = est[np.all(np.isfinite(est), axis=1)]
+
+        if gt.shape[0] < 2 or est.shape[0] < 2:
+            rospy.logwarn("Not enough valid UAV1 samples after filtering.")
+            return float("nan"), float("nan"), float("nan"), float("nan")
+
+        gt = gt[np.argsort(gt[:, 0])]
+        est = est[np.argsort(est[:, 0])]
+
+        gt_unique_idx = np.unique(gt[:, 0], return_index=True)[1]
+        est_unique_idx = np.unique(est[:, 0], return_index=True)[1]
+        gt = gt[np.sort(gt_unique_idx)]
+        est = est[np.sort(est_unique_idx)]
+
+        gt_times = gt[:, 0]
+        gt_xyz = gt[:, 1:4]
+
+        est_times = est[:, 0]
+        est_xyz = est[:, 1:4]
 
         common_t0 = max(gt_times[0], est_times[0])
         common_t1 = min(gt_times[-1], est_times[-1])
@@ -135,14 +153,21 @@ class MissionMetricsLogger(object):
             gt_interp[:, k] = np.interp(sample_times, gt_times, gt_xyz[:, k])
             est_interp[:, k] = np.interp(sample_times, est_times, est_xyz[:, k])
 
-        errors = np.linalg.norm(gt_interp - est_interp, axis=1)
+        # Align estimated trajectory to GT using initial offset
+        offset = gt_interp[0] - est_interp[0]
+        est_aligned = est_interp + offset
+
+        errors = np.linalg.norm(gt_interp - est_aligned, axis=1)
+
         rms = float(np.sqrt(np.mean(errors ** 2)))
         mean_e = float(np.mean(errors))
         max_e = float(np.max(errors))
         final_drift = float(errors[-1])
 
-        return rms, mean_e, max_e, final_drift
+        rospy.loginfo("UAV1 aligned pose errors: RMS=%.4f m, mean=%.4f m, max=%.4f m, final drift=%.4f m",
+                    rms, mean_e, max_e, final_drift)
 
+        return rms, mean_e, max_e, final_drift
     def compute_map_completeness(self):
         if self.latest_map is None:
             rospy.logwarn("No occupancy grid received.")
@@ -208,8 +233,6 @@ class MissionMetricsLogger(object):
         oy = float(map_origin["y"])
         oz = float(map_origin["z"])
 
-        # Here using translation only, assuming map/world axes aligned in your setup.
-        # If later needed, replace with full transform.
         wx = ox + mx
         wy = oy + my
         wz = oz + mz

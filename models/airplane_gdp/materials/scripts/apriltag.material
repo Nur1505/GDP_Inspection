@@ -1,0 +1,41 @@
+material Apriltag/Tag36h11_0
+{
+  technique
+  {
+    pass
+    {
+      lighting off
+      depth_write on
+      depth_check on
+      cull_hardware none
+      cull_software none
+      ambient 1 1 1 1
+      diffuse 1 1 1 1
+      texture_unit
+      {
+        texture tag36_11_00000.png
+      }
+    }
+  }
+}
+
+material Apriltag/Tag36h11_1
+{
+  technique
+  {
+    pass
+    {
+      lighting off
+      depth_write on
+      depth_check on
+      cull_hardware none
+      cull_software none
+      ambient 1 1 1 1
+      diffuse 1 1 1 1
+      texture_unit
+      {
+        texture tag36_11_00001.png
+      }
+    }
+  }
+}
